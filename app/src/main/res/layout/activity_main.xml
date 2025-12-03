@@ -12,7 +12,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/app_teal"
+        android:background="#00ACC1"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:contentInsetStart="0dp">
 
@@ -21,41 +21,39 @@
             android:layout_height="match_parent"
             android:paddingHorizontal="8dp">
 
-            <!-- UPDATED: referencing ic_menu_icon -->
             <ImageView
                 android:id="@+id/btnMenu"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_menu_icon"
-                app:tint="@color/white" />
+                app:tint="#FFFFFF" />
 
-            <!-- Replace this with your own logo if you have one later -->
+            <!-- UPDATED: IRCTC Logo -->
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="16dp"
                 android:layout_toEndOf="@id/btnMenu"
-                android:src="@drawable/ic_launcher_background"
-                tools:srcCompat="@tools:sample/avatars" />
+                android:src="@drawable/ic_irctc_logo" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="TRAIN LIST"
-                android:textColor="@color/white"
+                android:textColor="#FFFFFF"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
+            <!-- UPDATED: CRIS Logo -->
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_launcher_background"
-                tools:srcCompat="@tools:sample/avatars" />
+                android:src="@drawable/ic_cris_logo" />
         </RelativeLayout>
     </androidx.appcompat.widget.Toolbar>
 
@@ -63,17 +61,16 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/dark_grey_bar"
+        android:background="#263238"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="16dp">
 
-        <!-- UPDATED: referencing ic_left_arrow_icon -->
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_left_arrow_icon"
-            app:tint="@color/white" />
+            app:tint="#FFFFFF" />
 
         <TextView
             android:layout_width="0dp"
@@ -81,82 +78,97 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="Wed 11 Jan 17"
-            android:textColor="@color/white"
+            android:textColor="#FFFFFF"
             android:textSize="16sp" />
 
-        <!-- UPDATED: referencing ic_right_arrow_icon -->
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_right_arrow_icon"
-            app:tint="@color/white" />
+            app:tint="#FFFFFF" />
     </LinearLayout>
 
-    <!-- 3. Quota Selection (Horizontal Scroll) -->
+    <!-- 3. Quota Selection (Updated for better visibility) -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/quota_bar_bg"
-        android:paddingVertical="12dp"
-        android:scrollbars="none">
+        android:background="#37474F"
+        android:paddingVertical="10dp"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingHorizontal="8dp">
+            android:paddingHorizontal="4dp">
 
+            <!-- General: Reduced padding and text size -->
             <Button
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_marginHorizontal="4dp"
-                android:backgroundTint="@color/white"
+                android:layout_height="35dp"
+                android:layout_marginHorizontal="2dp"
+                android:backgroundTint="#FFFFFF"
                 android:text="General"
+                android:textSize="12sp"
+                android:paddingHorizontal="8dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
                 android:textAllCaps="false"
-                android:textColor="@color/app_teal" />
+                android:textColor="#00ACC1" />
 
+            <!-- Ladies -->
             <androidx.appcompat.widget.AppCompatButton
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_marginHorizontal="4dp"
+                android:layout_height="35dp"
+                android:layout_marginHorizontal="2dp"
                 android:background="@drawable/quota_button_border"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="10dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
                 android:text="Ladies"
+                android:textSize="12sp"
                 android:textAllCaps="false"
-                android:textColor="@color/quota_text_orange" />
+                android:textColor="#FFB300" />
 
+            <!-- Tatkal -->
             <androidx.appcompat.widget.AppCompatButton
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_marginHorizontal="4dp"
+                android:layout_height="35dp"
+                android:layout_marginHorizontal="2dp"
                 android:background="@drawable/quota_button_border"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="10dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
                 android:text="Tatkal"
+                android:textSize="12sp"
                 android:textAllCaps="false"
-                android:textColor="@color/quota_text_orange" />
+                android:textColor="#FFB300" />
 
+            <!-- Premium Tatkal -->
             <androidx.appcompat.widget.AppCompatButton
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_marginHorizontal="4dp"
+                android:layout_height="35dp"
+                android:layout_marginHorizontal="2dp"
                 android:background="@drawable/quota_button_border"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="10dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
                 android:text="Premium Tatkal"
+                android:textSize="12sp"
                 android:textAllCaps="false"
-                android:textColor="@color/quota_text_orange" />
+                android:textColor="#FFB300" />
         </LinearLayout>
     </HorizontalScrollView>
 
     <!-- 4. Sorting Tabs -->
-    <!-- UPDATED: referencing ic_down_arrow_icon in tabs -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/tab_bg_grey"
-        app:tabIndicatorColor="@color/app_teal"
-        app:tabSelectedTextColor="@color/app_teal"
-        app:tabTextColor="@color/text_secondary">
+        android:background="#EEEEEE"
+        app:tabIndicatorColor="#00ACC1"
+        app:tabSelectedTextColor="#00ACC1"
+        app:tabTextColor="#757575">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
@@ -183,6 +195,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/white" />
+        android:background="#FFFFFF" />
 
 </LinearLayout>

@@ -197,4 +197,13 @@
         android:layout_weight="1"
         android:background="#FFFFFF" />
 
+    <Button
+        android:id="@+id/btn_manage_computers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_manage_computers"
+        android:backgroundTint="#00ACC1"
+        android:textColor="#FFFFFF"
+        android:layout_margin="16dp"/>
+
 </LinearLayout>

@@ -20,6 +20,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".Activity2"
+            android:exported="false"
+            android:label="@string/title_activity_computer_list"
+            android:parentActivityName=".MainActivity"/>
+        <activity
+            android:name=".Activity3"
+            android:exported="false"
+            android:label="@string/title_activity_add_computer"
+            android:parentActivityName=".Activity2"/>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
 </manifest>

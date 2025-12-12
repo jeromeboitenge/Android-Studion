@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#6200EE</color>
-    <color name="purple_700">#3700B3</color>
-    <color name="teal_200">#03DAC5</color>
-    <color name="teal_700">#018786</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-
-    <color name="app_teal">#00ACC1</color>
-    <color name="dark_grey_bar">#333333</color>
-    <color name="quota_bar_bg">#424242</color>
-    <color name="quota_text_orange">#FFB300</color>
-    <color name="tab_bg_grey">#E0E0E0</color>
+    
+    <!-- Custom Colors -->
+    <color name="primary_color">#1976D2</color>
+    <color name="accent_color">#FFC107</color>
+    <color name="background_light">#F5F5F5</color>
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
-    <color name="divider_color">#BDBDBD</color>
+
+    <!-- Missing Legacy Colors -->
+    <color name="quota_text_orange">#FF9800</color>
+    <color name="app_teal">#009688</color>
 </resources>

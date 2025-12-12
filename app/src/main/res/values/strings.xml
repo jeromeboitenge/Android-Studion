@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">Assignment1</string>
+    <string name="title_activity_main">Train List</string>
+    <string name="title_activity_computer_list">Computer Inventory</string>
+    <string name="title_activity_add_computer">Add/Edit Computer</string>
+    <string name="btn_manage_computers">Manage Computers</string>
+    <string name="btn_add_computer">Add Computer</string>
+    <string name="btn_save">Save</string>
+    <string name="hint_model">Model Name</string>
+    <string name="hint_price">Price</string>
+    <string name="hint_date">Purchase Date</string>
+    <string name="label_laptop">Is Laptop?</string>
+    <string name="label_brand">Brand</string>
+    <string name="btn_pick_image">Pick Image</string>
+    <string name="title_select_image_source">Select Image Source</string>
+    <string name="option_camera">Camera</string>
+    <string name="option_gallery">Gallery</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_back">Back</string>
+    <string name="btn_home">Home</string>
+    <string name="btn_exit">Exit</string>
+    <string name="msg_empty_list">No computers found.</string>
 </resources>

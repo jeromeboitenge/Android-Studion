@@ -5,8 +5,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 
 import com.google.android.material.tabs.TabLayout;
 
@@ -31,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // 2. Setup TabLayout icons (optional aesthetic fix)
-        // The XML sets the icons, but sometimes they need nudging to look like the image
+        // The XML sets the icons, but sometimes they need nudging to look like the
+        // image
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         // Ensure the first tab is selected by default (Departure)
         TabLayout.Tab tab = tabLayout.getTabAt(0);
@@ -51,9 +54,15 @@ public class MainActivity extends AppCompatActivity {
         // Added one more to show scrolling
         trainList.add(new Train("GOLCONDA EXP", "17202", "SC", "GNT", "12:30", "18:10", "05:40"));
 
-
         // 5. Set Adapter
         adapter = new TrainAdapter(trainList);
         recyclerView.setAdapter(adapter);
+
+        // Button to launch Activity2
+        Button btnManageComputers = findViewById(R.id.btn_manage_computers);
+        btnManageComputers.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, Activity2.class);
+            startActivity(intent);
+        });
     }
 }

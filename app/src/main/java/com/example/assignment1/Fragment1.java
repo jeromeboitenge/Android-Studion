@@ -63,8 +63,7 @@ public class Fragment1 extends Fragment {
 
     // Gallery Launcher
     private final ActivityResultLauncher<String> mGetContent = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            new ActivityResultCallback<Uri>() {
+            new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
                 @Override
                 public void onActivityResult(Uri uri) {
                     if (uri != null) {
@@ -76,8 +75,7 @@ public class Fragment1 extends Fragment {
 
     // Camera Launcher
     private final ActivityResultLauncher<Uri> mTakePicture = registerForActivityResult(
-            new ActivityResultContracts.TakePicture(),
-            new ActivityResultCallback<Boolean>() {
+            new ActivityResultContracts.TakePicture(), new ActivityResultCallback<Boolean>() {
                 @Override
                 public void onActivityResult(Boolean success) {
                     if (success) {
@@ -240,8 +238,14 @@ public class Fragment1 extends Fragment {
             Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
+        double price;
+        try {
+            price = Double.parseDouble(priceStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(requireContext(), "Invalid Price Format", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        double price = Double.parseDouble(priceStr);
         String imageUriString = (selectedImageUri != null) ? selectedImageUri.toString() : "";
 
         if (isEditMode) {

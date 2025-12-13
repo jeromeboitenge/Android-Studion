@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
+import java.util.List;
 
 public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnComputerClickListener {
 
@@ -71,6 +72,18 @@ public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnCo
             }
         });
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_manage_brands) {
+            startActivity(new Intent(this, ActivityBrands.class));
+            return true;
+        } else if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void performSearch(String query) {

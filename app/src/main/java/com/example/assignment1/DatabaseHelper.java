@@ -95,6 +95,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return brands;
     }
 
+    // --- Brand Operations ---
+    public long addBrand(String name, String description) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_BRAND_NAME, name);
+        values.put(COLUMN_BRAND_DESC, description);
+        return db.insert(TABLE_BRAND, null, values);
+    }
+
+}
+
     // --- Computer Operations ---
     public long addComputer(Computer computer) {
         SQLiteDatabase db = this.getWritableDatabase();

@@ -9,8 +9,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import java.util.List;
+import androidx.appcompat.widget.SearchView;
+import android.view.Menu;
+import android.view.MenuInflater;
 
 public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnComputerClickListener {
 
@@ -51,13 +52,38 @@ public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnCo
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        loadComputers();
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_search, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                performSearch(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                performSearch(newText);
+                return false;
+            }
+        });
+        return true;
     }
 
-    private void loadComputers() {
-        List<Computer> computers = dbHelper.getAllComputers();
+    private void performSearch(String query) {
+        List<Computer> computers;
+        if (query.isEmpty()) {
+            computers = dbHelper.getAllComputers();
+        } else {
+            computers = dbHelper.searchComputers(query);
+        }
+        updateList(computers);
+    }
+
+    private void updateList(List<Computer> computers) {
         if (computers.isEmpty()) {
             emptyView.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
@@ -71,6 +97,17 @@ public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnCo
                 adapter.updateData(computers);
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadComputers();
+    }
+
+    private void loadComputers() {
+        List<Computer> computers = dbHelper.getAllComputers();
+        updateList(computers);
     }
 
     @Override

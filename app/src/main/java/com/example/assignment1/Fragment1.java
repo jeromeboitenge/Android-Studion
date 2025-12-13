@@ -127,8 +127,8 @@ public class Fragment1 extends Fragment {
         btnSave.setOnClickListener(v -> saveComputer());
 
         btnCancel.setOnClickListener(v -> {
-            if (getFragmentManager() != null && getFragmentManager().getBackStackEntryCount() > 0) {
-                getFragmentManager().popBackStack();
+            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+                getParentFragmentManager().popBackStack();
             } else {
                 requireActivity().finish();
             }
@@ -250,8 +250,8 @@ public class Fragment1 extends Fragment {
             int result = dbHelper.updateComputer(computer);
             if (result > 0) {
                 Toast.makeText(requireContext(), "Computer Updated!", Toast.LENGTH_SHORT).show();
-                if (getFragmentManager() != null) {
-                    getFragmentManager().popBackStack();
+                if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+                    getParentFragmentManager().popBackStack();
                 } else {
                     requireActivity().finish();
                 }

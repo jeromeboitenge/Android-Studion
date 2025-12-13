@@ -90,7 +90,7 @@ public class FragmentDetails extends Fragment {
 
         tvModel.setText(computer.getModel());
         tvBrand.setText(computer.getBrandName());
-        tvPrice.setText(String.format("$%.2f", computer.getPrice()));
+        tvPrice.setText(String.format(Locale.getDefault(), "RWF %,.0f", computer.getPrice()));
         tvDate.setText(computer.getPurchaseDate());
         cbLaptop.setChecked(computer.isLaptop());
 

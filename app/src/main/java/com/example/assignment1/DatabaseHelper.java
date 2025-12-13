@@ -182,4 +182,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return computers;
     }
+
+    public List<Computer> searchComputers(String keyword) {
+        List<Computer> computers = new ArrayList<>();
+        String selectQuery = "SELECT c.*, b." + COLUMN_BRAND_NAME + " as brand_name " +
+                "FROM " + TABLE_COMPUTER + " c " +
+                "LEFT JOIN " + TABLE_BRAND + " b ON c." + COLUMN_COMPUTER_BRAND_ID + " = b." + COLUMN_BRAND_ID +
+                " WHERE c." + COLUMN_COMPUTER_MODEL + " LIKE ? OR b." + COLUMN_BRAND_NAME + " LIKE ?" +
+                " ORDER BY c." + COLUMN_COMPUTER_ID + " DESC";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, new String[] { "%" + keyword + "%", "%" + keyword + "%" });
+
+        if (cursor.moveToFirst()) {
+            do {
+                Computer computer = new Computer(
+                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_MODEL)),
+                        cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_PRICE)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_DATE)),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IS_LAPTOP)) == 1,
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IMAGE)),
+                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_BRAND_ID)));
+                computer.setBrandName(cursor.getString(cursor.getColumnIndexOrThrow("brand_name")));
+                computers.add(computer);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return computers;
+    }
 }

@@ -39,7 +39,7 @@ public class ComputerAdapter extends RecyclerView.Adapter<ComputerAdapter.Comput
         Computer computer = computerList.get(position);
         holder.modelName.setText(computer.getModel());
         holder.brandName.setText(computer.getBrandName());
-        holder.price.setText(String.format("$%.2f", computer.getPrice()));
+        holder.price.setText(String.format(Locale.getDefault(), "RWF %,.0f", computer.getPrice()));
 
         if (computer.getImageUri() != null && !computer.getImageUri().isEmpty()) {
             try {

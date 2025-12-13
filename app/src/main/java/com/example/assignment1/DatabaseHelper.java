@@ -104,7 +104,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(TABLE_BRAND, null, values);
     }
 
-}
+    public int updateBrand(long id, String name, String description) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_BRAND_NAME, name);
+        values.put(COLUMN_BRAND_DESC, description);
+        return db.update(TABLE_BRAND, values, COLUMN_BRAND_ID + " = ?", new String[] { String.valueOf(id) });
+    }
+
+    public void deleteBrand(long id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_BRAND, COLUMN_BRAND_ID + " = ?", new String[] { String.valueOf(id) });
+    }
 
     // --- Computer Operations ---
     public long addComputer(Computer computer) {

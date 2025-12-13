@@ -13,6 +13,7 @@ import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import java.util.List;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnComputerClickListener {
 

@@ -41,14 +41,25 @@ public class ActivityBrands extends AppCompatActivity {
     private void loadBrands() {
         List<Brand> brands = dbHelper.getAllBrands();
         if (adapter == null) {
-            adapter = new BrandAdapter(brands);
+            adapter = new BrandAdapter(brands, new BrandAdapter.OnBrandActionListener() {
+                @Override
+                public void onEdit(Brand brand) {
+                    showBrandDialog(brand);
+                }
+
+                @Override
+                public void onDelete(Brand brand) {
+                    showDeleteConfirmation(brand);
+                }
+            });
             recyclerView.setAdapter(adapter);
         } else {
             adapter.updateData(brands);
         }
     }
 
-    private void showAddBrandDialog() {
+    // Reuse dialog for Add and Edit
+    private void showBrandDialog(final Brand brandToEdit) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_add_brand, null);
@@ -57,25 +68,61 @@ public class ActivityBrands extends AppCompatActivity {
         final EditText etName = dialogView.findViewById(R.id.et_brand_name);
         final EditText etDesc = dialogView.findViewById(R.id.et_brand_desc);
 
-        builder.setTitle("Add New Brand")
-                .setPositiveButton("Add", (dialog, id) -> {
-                    String name = etName.getText().toString().trim();
-                    String desc = etDesc.getText().toString().trim();
+        boolean isEdit = (brandToEdit != null);
 
-                    if (!name.isEmpty()) {
-                        long result = dbHelper.addBrand(name, desc);
-                        if (result != -1) {
-                            Toast.makeText(ActivityBrands.this, "Brand Added", Toast.LENGTH_SHORT).show();
-                            loadBrands();
-                        } else {
-                            Toast.makeText(ActivityBrands.this, "Error adding brand", Toast.LENGTH_SHORT).show();
-                        }
+        if (isEdit) {
+            etName.setText(brandToEdit.getName());
+            etDesc.setText(brandToEdit.getDescription());
+            builder.setTitle("Edit Brand");
+        } else {
+            builder.setTitle("Add New Brand");
+        }
+
+        builder.setPositiveButton(isEdit ? "Update" : "Add", (dialog, id) -> {
+            String name = etName.getText().toString().trim();
+            String desc = etDesc.getText().toString().trim();
+
+            if (!name.isEmpty()) {
+                if (isEdit) {
+                    int result = dbHelper.updateBrand(brandToEdit.getId(), name, desc);
+                    if (result > 0) {
+                        Toast.makeText(ActivityBrands.this, "Brand Updated", Toast.LENGTH_SHORT).show();
+                        loadBrands();
                     } else {
-                        Toast.makeText(ActivityBrands.this, "Name is required", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ActivityBrands.this, "Error updating brand", Toast.LENGTH_SHORT).show();
                     }
-                })
-                .setNegativeButton("Cancel", (dialog, id) -> dialog.dismiss());
+                } else {
+                    long result = dbHelper.addBrand(name, desc);
+                    if (result != -1) {
+                        Toast.makeText(ActivityBrands.this, "Brand Added", Toast.LENGTH_SHORT).show();
+                        loadBrands();
+                    } else {
+                        Toast.makeText(ActivityBrands.this, "Error adding brand", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            } else {
+                Toast.makeText(ActivityBrands.this, "Name is required", Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, id) -> dialog.dismiss());
         builder.create().show();
+    }
+
+    private void showDeleteConfirmation(final Brand brand) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Brand")
+                .setMessage("Are you sure you want to delete " + brand.getName() + "?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    dbHelper.deleteBrand(brand.getId());
+                    Toast.makeText(ActivityBrands.this, "Brand Deleted", Toast.LENGTH_SHORT).show();
+                    loadBrands();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showAddBrandDialog() {
+        showBrandDialog(null);
     }
 
     @Override

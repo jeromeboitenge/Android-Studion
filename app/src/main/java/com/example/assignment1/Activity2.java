@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
 
-public class Activity2 extends AppCompatActivity {
+public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnComputerClickListener {
 
     private RecyclerView recyclerView;
     private ComputerAdapter adapter;
@@ -34,7 +34,7 @@ public class Activity2 extends AppCompatActivity {
         recyclerView = findViewById(R.id.computer_recycler_view);
         emptyView = findViewById(R.id.empty_view);
 
-        setupNavigation(); // Call the new navigation setup method
+        setupNavigation();
 
         FloatingActionButton fab = findViewById(R.id.fab_add_computer);
 
@@ -44,6 +44,7 @@ public class Activity2 extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Activity2.this, Activity3.class);
+                intent.putExtra("mode", "ADD");
                 startActivity(intent);
             }
         });
@@ -64,11 +65,35 @@ public class Activity2 extends AppCompatActivity {
             emptyView.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
             if (adapter == null) {
-                adapter = new ComputerAdapter(this, computers);
+                adapter = new ComputerAdapter(this, computers, this);
                 recyclerView.setAdapter(adapter);
             } else {
                 adapter.updateData(computers);
             }
         }
+    }
+
+    @Override
+    public void onComputerClick(long id) {
+        Intent intent = new Intent(this, Activity3.class);
+        intent.putExtra("mode", "VIEW");
+        intent.putExtra("computer_id", id);
+        startActivity(intent);
+    }
+
+    private void setupNavigation() {
+        android.widget.ImageButton btnBack = findViewById(R.id.btn_nav_back);
+        android.widget.ImageButton btnHome = findViewById(R.id.btn_nav_home);
+        android.widget.ImageButton btnExit = findViewById(R.id.btn_nav_exit);
+
+        btnBack.setOnClickListener(v -> finish());
+
+        btnHome.setOnClickListener(v -> {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+        });
+
+        btnExit.setOnClickListener(v -> finishAffinity());
     }
 }

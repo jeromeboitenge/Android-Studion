@@ -15,6 +15,12 @@
     <string name="title_select_image_source">Select Image Source</string>
     <string name="option_camera">Camera</string>
     <string name="option_gallery">Gallery</string>
+    <string name="btn_update">Update</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_edit">Edit</string>
+    <string name="title_details">Computer Details</string>
+    <string name="confirm_delete_title">Delete Computer?</string>
+    <string name="confirm_delete_message">Are you sure you want to delete this computer? This action cannot be undone.</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_back">Back</string>
     <string name="btn_home">Home</string>

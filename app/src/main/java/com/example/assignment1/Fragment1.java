@@ -42,11 +42,24 @@ public class Fragment1 extends Fragment {
     private CheckBox cbLaptop;
     private ImageView ivPreview;
     private Button btnSave, btnPickImage;
+    private Button btnCancel;
 
     private DatabaseHelper dbHelper;
     private Uri selectedImageUri;
     private Uri tempImageUri; // For Camera
     private List<Brand> brandList;
+
+    private static final String ARG_COMPUTER_ID = "computer_id";
+    private long computerId = -1;
+    private boolean isEditMode = false;
+
+    public static Fragment1 newInstance(long computerId) {
+        Fragment1 fragment = new Fragment1();
+        Bundle args = new Bundle();
+        args.putLong(ARG_COMPUTER_ID, computerId);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     // Gallery Launcher
     private final ActivityResultLauncher<String> mGetContent = registerForActivityResult(
@@ -74,6 +87,15 @@ public class Fragment1 extends Fragment {
                 }
             });
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            computerId = getArguments().getLong(ARG_COMPUTER_ID, -1);
+            isEditMode = computerId != -1;
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -90,18 +112,57 @@ public class Fragment1 extends Fragment {
         ivPreview = view.findViewById(R.id.iv_preview);
         btnSave = view.findViewById(R.id.btn_save);
         btnPickImage = view.findViewById(R.id.btn_pick_image);
-        Button btnCancel = view.findViewById(R.id.btn_cancel);
+        btnCancel = view.findViewById(R.id.btn_cancel);
 
         loadBrands();
         setupDatePicker();
+
+        if (isEditMode) {
+            loadComputerData();
+            btnSave.setText(R.string.btn_update);
+        }
 
         btnPickImage.setOnClickListener(v -> showImageSourceDialog());
 
         btnSave.setOnClickListener(v -> saveComputer());
 
-        btnCancel.setOnClickListener(v -> requireActivity().finish());
+        btnCancel.setOnClickListener(v -> {
+            if (getFragmentManager() != null && getFragmentManager().getBackStackEntryCount() > 0) {
+                getFragmentManager().popBackStack();
+            } else {
+                requireActivity().finish();
+            }
+        });
 
         return view;
+    }
+
+    private void loadComputerData() {
+        Computer computer = dbHelper.getComputer(computerId);
+        if (computer != null) {
+            etModel.setText(computer.getModel());
+            etPrice.setText(String.valueOf(computer.getPrice()));
+            tvDate.setText(computer.getPurchaseDate());
+            cbLaptop.setChecked(computer.isLaptop());
+
+            // Set Spinner Selection
+            for (int i = 0; i < brandList.size(); i++) {
+                if (brandList.get(i).getId() == computer.getBrandId()) {
+                    spinnerBrand.setSelection(i);
+                    break;
+                }
+            }
+
+            // Load Image
+            if (computer.getImageUri() != null && !computer.getImageUri().isEmpty()) {
+                selectedImageUri = Uri.parse(computer.getImageUri());
+                try {
+                    ivPreview.setImageURI(selectedImageUri);
+                } catch (Exception e) {
+                    ivPreview.setImageResource(R.mipmap.ic_launcher);
+                }
+            }
+        }
     }
 
     private void showImageSourceDialog() {
@@ -183,14 +244,30 @@ public class Fragment1 extends Fragment {
         double price = Double.parseDouble(priceStr);
         String imageUriString = (selectedImageUri != null) ? selectedImageUri.toString() : "";
 
-        Computer computer = new Computer(model, price, date, isLaptop, imageUriString, selectedBrand.getId());
-        long result = dbHelper.addComputer(computer);
-
-        if (result != -1) {
-            Toast.makeText(requireContext(), "Computer Saved!", Toast.LENGTH_SHORT).show();
-            requireActivity().finish(); // Go back to Activity2
+        if (isEditMode) {
+            Computer computer = new Computer(computerId, model, price, date, isLaptop, imageUriString,
+                    selectedBrand.getId());
+            int result = dbHelper.updateComputer(computer);
+            if (result > 0) {
+                Toast.makeText(requireContext(), "Computer Updated!", Toast.LENGTH_SHORT).show();
+                if (getFragmentManager() != null) {
+                    getFragmentManager().popBackStack();
+                } else {
+                    requireActivity().finish();
+                }
+            } else {
+                Toast.makeText(requireContext(), "Error updating computer", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(requireContext(), "Error saving computer", Toast.LENGTH_SHORT).show();
+            Computer computer = new Computer(model, price, date, isLaptop, imageUriString, selectedBrand.getId());
+            long result = dbHelper.addComputer(computer);
+
+            if (result != -1) {
+                Toast.makeText(requireContext(), "Computer Saved!", Toast.LENGTH_SHORT).show();
+                requireActivity().finish(); // Go back to Activity2
+            } else {
+                Toast.makeText(requireContext(), "Error saving computer", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

@@ -109,6 +109,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(TABLE_COMPUTER, null, values);
     }
 
+    public Computer getComputer(long id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT c.*, b." + COLUMN_BRAND_NAME + " as brand_name " +
+                "FROM " + TABLE_COMPUTER + " c " +
+                "LEFT JOIN " + TABLE_BRAND + " b ON c." + COLUMN_COMPUTER_BRAND_ID + " = b." + COLUMN_BRAND_ID +
+                " WHERE c." + COLUMN_COMPUTER_ID + " = " + id;
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        Computer computer = null;
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                computer = new Computer(
+                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_MODEL)),
+                        cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_PRICE)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_DATE)),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IS_LAPTOP)) == 1,
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IMAGE)),
+                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_BRAND_ID)));
+                computer.setBrandName(cursor.getString(cursor.getColumnIndexOrThrow("brand_name")));
+            }
+            cursor.close();
+        }
+        return computer;
+    }
+
+    public int updateComputer(Computer computer) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_COMPUTER_MODEL, computer.getModel());
+        values.put(COLUMN_COMPUTER_PRICE, computer.getPrice());
+        values.put(COLUMN_COMPUTER_DATE, computer.getPurchaseDate());
+        values.put(COLUMN_COMPUTER_IS_LAPTOP, computer.isLaptop() ? 1 : 0);
+        values.put(COLUMN_COMPUTER_IMAGE, computer.getImageUri());
+        values.put(COLUMN_COMPUTER_BRAND_ID, computer.getBrandId());
+
+        return db.update(TABLE_COMPUTER, values, COLUMN_COMPUTER_ID + " = ?",
+                new String[] { String.valueOf(computer.getId()) });
+    }
+
+    public void deleteComputer(long id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_COMPUTER, COLUMN_COMPUTER_ID + " = ?", new String[] { String.valueOf(id) });
+    }
+
     public List<Computer> getAllComputers() {
         List<Computer> computers = new ArrayList<>();
         String selectQuery = "SELECT c.*, b." + COLUMN_BRAND_NAME + " as brand_name " +

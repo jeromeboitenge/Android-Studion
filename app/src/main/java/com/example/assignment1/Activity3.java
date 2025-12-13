@@ -1,4 +1,3 @@
-```java
 package com.example.assignment1;
 
 import android.content.Intent;
@@ -7,30 +6,64 @@ import android.view.MenuItem;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class Activity3 extends AppCompatActivity {
+public class Activity3 extends AppCompatActivity implements FragmentDetails.OnComputerActionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_3);
 
-        setTitle(R.string.title_activity_add_computer);
-
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new Fragment1())
-                    .commit();
+            handleIntent();
         }
 
         setupNavigation();
     }
 
-    private void setupNavigation() {
-        android.widget.Button btnBack = findViewById(R.id.btn_nav_back);
-        android.widget.Button btnHome = findViewById(R.id.btn_nav_home);
-        android.widget.Button btnExit = findViewById(R.id.btn_nav_exit);
+    private void handleIntent() {
+        String mode = getIntent().getStringExtra("mode");
+        long computerId = getIntent().getLongExtra("computer_id", -1);
 
-        btnBack.setOnClickListener(v -> finish());
+        if ("VIEW".equals(mode) && computerId != -1) {
+            setTitle(getString(R.string.title_details));
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, FragmentDetails.newInstance(computerId))
+                    .commit();
+        } else {
+            // Default to ADD mode
+            setTitle(getString(R.string.title_activity_add_computer));
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new Fragment1())
+                    .commit();
+        }
+    }
+
+    @Override
+    public void onEditComputer(long id) {
+        setTitle(getString(R.string.btn_edit));
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, Fragment1.newInstance(id))
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
+    public void onDeleteComputer() {
+        finish();
+    }
+
+    private void setupNavigation() {
+        android.widget.ImageButton btnBack = findViewById(R.id.btn_nav_back);
+        android.widget.ImageButton btnHome = findViewById(R.id.btn_nav_home);
+        android.widget.ImageButton btnExit = findViewById(R.id.btn_nav_exit);
+
+        btnBack.setOnClickListener(v -> {
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                getSupportFragmentManager().popBackStack();
+            } else {
+                finish();
+            }
+        });
 
         btnHome.setOnClickListener(v -> {
             Intent intent = new Intent(this, MainActivity.class);

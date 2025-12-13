@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         // Button to launch Activity2
-        Button btnManageComputers = findViewById(R.id.btn_manage_computers);
+        Button btnManageComputers = findViewById(R.id.btn_open_inventory);
         btnManageComputers.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, Activity2.class);
             startActivity(intent);

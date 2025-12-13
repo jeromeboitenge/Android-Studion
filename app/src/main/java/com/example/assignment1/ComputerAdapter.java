@@ -15,10 +15,16 @@ public class ComputerAdapter extends RecyclerView.Adapter<ComputerAdapter.Comput
 
     private Context context;
     private List<Computer> computerList;
+    private OnComputerClickListener listener;
 
-    public ComputerAdapter(Context context, List<Computer> computerList) {
+    public interface OnComputerClickListener {
+        void onComputerClick(long id);
+    }
+
+    public ComputerAdapter(Context context, List<Computer> computerList, OnComputerClickListener listener) {
         this.context = context;
         this.computerList = computerList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -44,6 +50,12 @@ public class ComputerAdapter extends RecyclerView.Adapter<ComputerAdapter.Comput
         } else {
             holder.image.setImageResource(R.mipmap.ic_launcher);
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onComputerClick(computer.getId());
+            }
+        });
     }
 
     @Override

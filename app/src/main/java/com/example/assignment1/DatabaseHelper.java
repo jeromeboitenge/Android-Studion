@@ -3,15 +3,19 @@ package com.example.assignment1;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "ComputerInventory.db";
-    private static final int DATABASE_VERSION = 1;
+    // Increment to 6 for Date Field Fix
+    private static final int DATABASE_VERSION = 6;
 
     // Table Brands
     public static final String TABLE_BRAND = "brands";
@@ -19,15 +23,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_BRAND_NAME = "name";
     public static final String COLUMN_BRAND_DESC = "description";
 
-    // Table Computers
+    // Table Computers (Now effectively Machines)
     public static final String TABLE_COMPUTER = "computers";
     public static final String COLUMN_COMPUTER_ID = "_id";
-    public static final String COLUMN_COMPUTER_MODEL = "model";
-    public static final String COLUMN_COMPUTER_PRICE = "price";
-    public static final String COLUMN_COMPUTER_DATE = "purchase_date";
-    public static final String COLUMN_COMPUTER_IS_LAPTOP = "is_laptop";
+    public static final String COLUMN_COMPUTER_MODEL = "model"; // This will start storing "Name"
+    public static final String COLUMN_COMPUTER_SERIAL = "serial_number"; // New
+    public static final String COLUMN_COMPUTER_LOCATION = "location"; // New
     public static final String COLUMN_COMPUTER_IMAGE = "image_uri";
     public static final String COLUMN_COMPUTER_BRAND_ID = "brand_id";
+    public static final String COLUMN_COMPUTER_STATUS = "status";
+    public static final String COLUMN_COMPUTER_DATE = "date_added"; // New Column
 
     private static final String CREATE_TABLE_BRAND = "CREATE TABLE " + TABLE_BRAND + "(" +
             COLUMN_BRAND_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -38,11 +43,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_COMPUTER = "CREATE TABLE " + TABLE_COMPUTER + "(" +
             COLUMN_COMPUTER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
             COLUMN_COMPUTER_MODEL + " TEXT," +
-            COLUMN_COMPUTER_PRICE + " REAL," +
-            COLUMN_COMPUTER_DATE + " TEXT," +
-            COLUMN_COMPUTER_IS_LAPTOP + " INTEGER," +
+            COLUMN_COMPUTER_SERIAL + " TEXT," +
+            COLUMN_COMPUTER_LOCATION + " TEXT," +
             COLUMN_COMPUTER_IMAGE + " TEXT," +
             COLUMN_COMPUTER_BRAND_ID + " INTEGER," +
+            COLUMN_COMPUTER_STATUS + " TEXT," +
+            COLUMN_COMPUTER_DATE + " TEXT," +
             "FOREIGN KEY(" + COLUMN_COMPUTER_BRAND_ID + ") REFERENCES " + TABLE_BRAND + "(" + COLUMN_BRAND_ID + ")" +
             ")";
 
@@ -52,11 +58,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE_BRAND);
-        db.execSQL(CREATE_TABLE_COMPUTER);
-
-        // Seed some brands
-        seedBrands(db);
+        try {
+            db.execSQL(CREATE_TABLE_BRAND);
+            db.execSQL(CREATE_TABLE_COMPUTER);
+            seedBrands(db);
+        } catch (SQLException e) {
+            Log.e("DatabaseHelper", "Error seeding database", e);
+        }
     }
 
     private void seedBrands(SQLiteDatabase db) {
@@ -95,7 +103,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return brands;
     }
 
-    // --- Brand Operations ---
     public long addBrand(String name, String description) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -117,18 +124,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_BRAND, COLUMN_BRAND_ID + " = ?", new String[] { String.valueOf(id) });
     }
 
-    // --- Computer Operations ---
+    // --- Computer (Machine) Operations ---
     public long addComputer(Computer computer) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_COMPUTER_MODEL, computer.getModel());
-        values.put(COLUMN_COMPUTER_PRICE, computer.getPrice());
-        values.put(COLUMN_COMPUTER_DATE, computer.getPurchaseDate());
-        values.put(COLUMN_COMPUTER_IS_LAPTOP, computer.isLaptop() ? 1 : 0);
+        values.put(COLUMN_COMPUTER_SERIAL, computer.getSerialNumber());
+        values.put(COLUMN_COMPUTER_LOCATION, computer.getLocation());
         values.put(COLUMN_COMPUTER_IMAGE, computer.getImageUri());
         values.put(COLUMN_COMPUTER_BRAND_ID, computer.getBrandId());
+        values.put(COLUMN_COMPUTER_STATUS, computer.getStatus());
+        values.put(COLUMN_COMPUTER_DATE, computer.getDateAdded());
 
-        return db.insert(TABLE_COMPUTER, null, values);
+        try {
+            return db.insertOrThrow(TABLE_COMPUTER, null, values);
+        } catch (SQLException e) {
+            Log.e("DatabaseHelper", "Error adding machine", e);
+            return -1;
+        }
     }
 
     public Computer getComputer(long id) {
@@ -146,12 +159,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 computer = new Computer(
                         cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_ID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_MODEL)),
-                        cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_PRICE)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_DATE)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IS_LAPTOP)) == 1,
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_SERIAL)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_LOCATION)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IMAGE)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_BRAND_ID)));
+                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_BRAND_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_DATE))); // Added Date
                 computer.setBrandName(cursor.getString(cursor.getColumnIndexOrThrow("brand_name")));
+
+                int statusIdx = cursor.getColumnIndex(COLUMN_COMPUTER_STATUS);
+                if (statusIdx != -1) {
+                    computer.setStatus(cursor.getString(statusIdx));
+                } else {
+                    computer.setStatus("Active");
+                }
             }
             cursor.close();
         }
@@ -162,11 +182,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_COMPUTER_MODEL, computer.getModel());
-        values.put(COLUMN_COMPUTER_PRICE, computer.getPrice());
-        values.put(COLUMN_COMPUTER_DATE, computer.getPurchaseDate());
-        values.put(COLUMN_COMPUTER_IS_LAPTOP, computer.isLaptop() ? 1 : 0);
+        values.put(COLUMN_COMPUTER_SERIAL, computer.getSerialNumber());
+        values.put(COLUMN_COMPUTER_LOCATION, computer.getLocation());
         values.put(COLUMN_COMPUTER_IMAGE, computer.getImageUri());
         values.put(COLUMN_COMPUTER_BRAND_ID, computer.getBrandId());
+        values.put(COLUMN_COMPUTER_STATUS, computer.getStatus());
+        values.put(COLUMN_COMPUTER_DATE, computer.getDateAdded());
 
         return db.update(TABLE_COMPUTER, values, COLUMN_COMPUTER_ID + " = ?",
                 new String[] { String.valueOf(computer.getId()) });
@@ -179,6 +200,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public List<Computer> getAllComputers() {
         List<Computer> computers = new ArrayList<>();
+        // Select All Query
         String selectQuery = "SELECT c.*, b." + COLUMN_BRAND_NAME + " as brand_name " +
                 "FROM " + TABLE_COMPUTER + " c " +
                 "LEFT JOIN " + TABLE_BRAND + " b ON c." + COLUMN_COMPUTER_BRAND_ID + " = b." + COLUMN_BRAND_ID +
@@ -192,12 +214,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Computer computer = new Computer(
                         cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_ID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_MODEL)),
-                        cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_PRICE)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_DATE)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IS_LAPTOP)) == 1,
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_SERIAL)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_LOCATION)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IMAGE)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_BRAND_ID)));
+                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_BRAND_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_DATE)));
                 computer.setBrandName(cursor.getString(cursor.getColumnIndexOrThrow("brand_name")));
+
+                int statusIdx = cursor.getColumnIndex(COLUMN_COMPUTER_STATUS);
+                if (statusIdx != -1) {
+                    computer.setStatus(cursor.getString(statusIdx));
+                } else {
+                    computer.setStatus("Active");
+                }
+
                 computers.add(computer);
             } while (cursor.moveToNext());
         }
@@ -210,27 +240,55 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String selectQuery = "SELECT c.*, b." + COLUMN_BRAND_NAME + " as brand_name " +
                 "FROM " + TABLE_COMPUTER + " c " +
                 "LEFT JOIN " + TABLE_BRAND + " b ON c." + COLUMN_COMPUTER_BRAND_ID + " = b." + COLUMN_BRAND_ID +
-                " WHERE c." + COLUMN_COMPUTER_MODEL + " LIKE ? OR b." + COLUMN_BRAND_NAME + " LIKE ?" +
+                " WHERE c." + COLUMN_COMPUTER_MODEL + " LIKE ? OR c." + COLUMN_COMPUTER_SERIAL + " LIKE ? OR b."
+                + COLUMN_BRAND_NAME + " LIKE ?" +
                 " ORDER BY c." + COLUMN_COMPUTER_ID + " DESC";
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, new String[] { "%" + keyword + "%", "%" + keyword + "%" });
+        Cursor cursor = db.rawQuery(selectQuery,
+                new String[] { "%" + keyword + "%", "%" + keyword + "%", "%" + keyword + "%" });
 
         if (cursor.moveToFirst()) {
             do {
                 Computer computer = new Computer(
                         cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_ID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_MODEL)),
-                        cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_PRICE)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_DATE)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IS_LAPTOP)) == 1,
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_SERIAL)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_LOCATION)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_IMAGE)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_BRAND_ID)));
+                        cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_BRAND_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COMPUTER_DATE)));
                 computer.setBrandName(cursor.getString(cursor.getColumnIndexOrThrow("brand_name")));
+
+                int statusIdx = cursor.getColumnIndex(COLUMN_COMPUTER_STATUS);
+                if (statusIdx != -1) {
+                    computer.setStatus(cursor.getString(statusIdx));
+                } else {
+                    computer.setStatus("Active");
+                }
+
                 computers.add(computer);
             } while (cursor.moveToNext());
         }
         cursor.close();
         return computers;
+    }
+
+    public boolean isBrandExists(String name) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_BRAND, new String[] { COLUMN_BRAND_ID },
+                COLUMN_BRAND_NAME + " = ?", new String[] { name }, null, null, null);
+        boolean exists = (cursor.getCount() > 0);
+        cursor.close();
+        return exists;
+    }
+
+    public boolean isBrandUsed(long brandId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_COMPUTER, new String[] { COLUMN_COMPUTER_ID },
+                COLUMN_COMPUTER_BRAND_ID + " = ?", new String[] { String.valueOf(brandId) }, null, null, null);
+        boolean used = (cursor.getCount() > 0);
+        cursor.close();
+        return used;
     }
 }

@@ -5,205 +5,206 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#FFFFFFFF"
     tools:context=".MainActivity">
 
-    <!-- 1. Custom Toolbar Area -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <!-- Top Toolbar/Header -->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="#00ACC1"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:contentInsetStart="0dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingHorizontal="8dp">
+        <ImageView
+            android:id="@+id/menu_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_launcher_foreground"
+            app:tint="#FFFFFF"
+            android:layout_centerVertical="true"
+            android:contentDescription="Menu" />
+            
+         <!-- Placeholder for Logo if available, using text for now -->
+         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="COMPUTER LIST"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-            <ImageView
-                android:id="@+id/btnMenu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_menu_icon"
-                app:tint="#FFFFFF" />
+    </RelativeLayout>
 
-            <!-- UPDATED: IRCTC Logo -->
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/btnMenu"
-                android:src="@drawable/ic_irctc_logo" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="TRAIN LIST"
-                android:textColor="#FFFFFF"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <!-- UPDATED: CRIS Logo -->
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_cris_logo" />
-        </RelativeLayout>
-    </androidx.appcompat.widget.Toolbar>
-
-    <!-- 2. Date Selection Bar -->
+    <!-- Navigation / date bar area -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:background="#263238"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="16dp">
-
-        <ImageView
+        android:gravity="center"
+        android:padding="12dp">
+        
+         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_left_arrow_icon"
-            app:tint="#FFFFFF" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="Wed 11 Jan 17"
+            android:text="Machine Management System"
             android:textColor="#FFFFFF"
-            android:textSize="16sp" />
+            android:textSize="16sp"/>
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_right_arrow_icon"
-            app:tint="#FFFFFF" />
     </LinearLayout>
 
-    <!-- 3. Quota Selection (Updated for better visibility) -->
+    <!-- Button Bar (Tabs) -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:scrollbars="none"
         android:background="#37474F"
-        android:paddingVertical="10dp"
-        android:fillViewport="true">
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingHorizontal="4dp">
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
-            <!-- General: Reduced padding and text size -->
             <Button
+                android:id="@+id/btn_nav_computers"
                 android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:layout_marginHorizontal="2dp"
+                android:layout_height="wrap_content"
+                android:text="Computers"
                 android:backgroundTint="#FFFFFF"
-                android:text="General"
-                android:textSize="12sp"
-                android:paddingHorizontal="8dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:textAllCaps="false"
-                android:textColor="#00ACC1" />
+                android:textColor="#00ACC1"
+                android:layout_marginEnd="8dp"
+                android:minHeight="40dp"
+                style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
-            <!-- Ladies -->
-            <androidx.appcompat.widget.AppCompatButton
+            <Button
+                android:id="@+id/btn_nav_add"
                 android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="@drawable/quota_button_border"
-                android:paddingHorizontal="10dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:text="Ladies"
-                android:textSize="12sp"
-                android:textAllCaps="false"
-                android:textColor="#FFB300" />
+                android:layout_height="wrap_content"
+                android:text="Add New"
+                android:backgroundTint="#00000000"
+                android:textColor="#FFB74D"
+                android:layout_marginEnd="8dp"
+                android:minHeight="40dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:strokeColor="#FFB74D"/>
+            
+            <Button
+                android:id="@+id/btn_nav_brands"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Brands"
+                android:backgroundTint="#00000000"
+                android:textColor="#FFB74D"
+                android:layout_marginEnd="8dp"
+                android:minHeight="40dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:strokeColor="#FFB74D"/>
 
-            <!-- Tatkal -->
-            <androidx.appcompat.widget.AppCompatButton
+             <Button
+                android:id="@+id/btn_nav_network"
                 android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="@drawable/quota_button_border"
-                android:paddingHorizontal="10dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:text="Tatkal"
-                android:textSize="12sp"
-                android:textAllCaps="false"
-                android:textColor="#FFB300" />
+                android:layout_height="wrap_content"
+                android:text="Network"
+                android:backgroundTint="#00000000"
+                android:textColor="#FFB74D"
+                android:minHeight="40dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:strokeColor="#FFB74D"/>
 
-            <!-- Premium Tatkal -->
-            <androidx.appcompat.widget.AppCompatButton
-                android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="@drawable/quota_button_border"
-                android:paddingHorizontal="10dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:text="Premium Tatkal"
-                android:textSize="12sp"
-                android:textAllCaps="false"
-                android:textColor="#FFB300" />
         </LinearLayout>
     </HorizontalScrollView>
 
-    <!-- 4. Sorting Tabs -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#EEEEEE"
-        app:tabIndicatorColor="#00ACC1"
-        app:tabSelectedTextColor="#00ACC1"
-        app:tabTextColor="#757575">
+        android:orientation="horizontal"
+        android:background="#E0E0E0"
+        android:padding="8dp">
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:icon="@drawable/ic_down_arrow_icon"
-            android:text="Departure" />
+            android:layout_weight="1"
+            android:text="Name"
+            android:gravity="center"
+            android:textColor="#455A64"
+            android:textStyle="bold"/>
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#B0BEC5"/>
+
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:icon="@drawable/ic_down_arrow_icon"
-            android:text="Arrival" />
+            android:layout_weight="1"
+            android:text="Brand"
+            android:gravity="center"
+            android:textColor="#455A64"
+             android:textStyle="bold"/>
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#B0BEC5"/>
+
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:icon="@drawable/ic_down_arrow_icon"
-            android:text="Travel Time" />
-    </com.google.android.material.tabs.TabLayout>
+            android:layout_weight="1"
+            android:text="Serial"
+            android:gravity="center"
+            android:textColor="#455A64"
+             android:textStyle="bold"/>
 
-    <!-- 5. The Train List area -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewTrains"
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#B0BEC5"/>
+
+         <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Date"
+            android:gravity="center"
+            android:textColor="#455A64"
+             android:textStyle="bold"/>
+
+    </LinearLayout>
+
+    <View
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#FFFFFF" />
+        android:layout_height="2dp"
+        android:background="#00ACC1"/>
 
-    <Button
-        android:id="@+id/btn_open_inventory"
+    <!-- Content Area -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/btn_manage_computers"
-        android:backgroundTint="#00ACC1"
-        android:textColor="#FFFFFF"
-        android:layout_margin="16dp"/>
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/main_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"/>
+            
+        <TextView
+            android:id="@+id/empty_view_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="No computers found"
+            android:visibility="gone"/>
+
+    </FrameLayout>
 
 </LinearLayout>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <h1>Machine Management</h1>
+        <button id="add-machine-btn" class="btn primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Machine
+        </button>
+    </div>
+</header>
+
+<main class="container">
+    <div id="machine-grid" class="grid">
+        <!-- Machines will be injected here -->
+    </div>
+</main>
+
+<!-- Add Machine Modal -->
+<div id="modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Add New Machine</h2>
+        <form id="add-machine-form">
+            <div class="form-group">
+                <label for="name">Machine Name</label>
+                <input type="text" id="name" name="name" required placeholder="e.g. Lathe 01">
+            </div>
+            <div class="form-group">
+                <label for="serial_number">Serial Number</label>
+                <input type="text" id="serial_number" name="serial_number" required placeholder="e.g. SN-998877">
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="Active">Active</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+             <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" placeholder="e.g. Workshop A">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn primary">Save Machine</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,7 +1,6 @@
-package com.example.assignment1; // Replace with your actual package name
+package com.example.assignment1;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -9,60 +8,96 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.material.tabs.TabLayout;
-
-import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ComputerAdapter.OnComputerClickListener {
 
     private RecyclerView recyclerView;
-    private TrainAdapter adapter;
-    private List<Train> trainList;
+    private ComputerAdapter adapter;
+    private DatabaseHelper dbHelper;
+    private TextView emptyView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 1. Setup Toolbar so it acts as the ActionBar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        // Hide default title because we used a custom TextView centered in XML
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        // Initialize DB and Views
+        dbHelper = new DatabaseHelper(this);
+        recyclerView = findViewById(R.id.main_recycler_view);
+        emptyView = findViewById(R.id.empty_view_main);
 
-        // 2. Setup TabLayout icons (optional aesthetic fix)
-        // The XML sets the icons, but sometimes they need nudging to look like the
-        // image
-        TabLayout tabLayout = findViewById(R.id.tabLayout);
-        // Ensure the first tab is selected by default (Departure)
-        TabLayout.Tab tab = tabLayout.getTabAt(0);
-        if (tab != null) {
-            tab.select();
-        }
-
-        // 3. Initialize RecyclerView
-        recyclerView = findViewById(R.id.recyclerViewTrains);
+        // Setup RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // 4. Create Dummy Data matching the image
-        trainList = new ArrayList<>();
-        trainList.add(new Train("JANMABHOOMI EXP", "12806", "SC", "GNT", "07:10", "11:50", "04:40"));
-        trainList.add(new Train("SC GNT EXP", "12706", "SC", "GNT", "07:40", "14:25", "06:45"));
-        trainList.add(new Train("SABARI EXP", "17230", "HYB", "GNT", "11:15", "17:00", "05:45"));
-        // Added one more to show scrolling
-        trainList.add(new Train("GOLCONDA EXP", "17202", "SC", "GNT", "12:30", "18:10", "05:40"));
+        // Setup Buttons (Simulation of Tabs)
+        setupNavigationButtons();
+    }
 
-        // 5. Set Adapter
-        adapter = new TrainAdapter(trainList);
-        recyclerView.setAdapter(adapter);
+    private void setupNavigationButtons() {
+        Button btnComputers = findViewById(R.id.btn_nav_computers);
+        Button btnAdd = findViewById(R.id.btn_nav_add);
+        Button btnBrands = findViewById(R.id.btn_nav_brands);
+        Button btnNetwork = findViewById(R.id.btn_nav_network);
 
-        // Button to launch Activity2
-        Button btnManageComputers = findViewById(R.id.btn_open_inventory);
-        btnManageComputers.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, Activity2.class);
+        // 1. Computers (Refresh List)
+        btnComputers.setOnClickListener(v -> {
+            loadComputers();
+            Toast.makeText(this, "Refreshed List", Toast.LENGTH_SHORT).show();
+        });
+
+        // 2. Add New -> Activity3
+        btnAdd.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, Activity3.class);
+            intent.putExtra("mode", "ADD");
             startActivity(intent);
         });
+
+        // 3. Brands -> ActivityBrands
+        btnBrands.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ActivityBrands.class);
+            startActivity(intent);
+        });
+
+        // 4. Network -> NetworkActivity
+        btnNetwork.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, NetworkActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadComputers();
+    }
+
+    private void loadComputers() {
+        List<Computer> computers = dbHelper.getAllComputers();
+        if (computers.isEmpty()) {
+            emptyView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+
+            if (adapter == null) {
+                adapter = new ComputerAdapter(this, computers, this);
+                recyclerView.setAdapter(adapter);
+            } else {
+                adapter.updateData(computers);
+            }
+        }
+    }
+
+    @Override
+    public void onComputerClick(long id) {
+        Intent intent = new Intent(this, Activity3.class);
+        intent.putExtra("mode", "VIEW");
+        intent.putExtra("computer_id", id);
+        startActivity(intent);
     }
 }

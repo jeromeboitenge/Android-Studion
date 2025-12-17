@@ -40,17 +40,31 @@ public class ComputerAdapter extends RecyclerView.Adapter<ComputerAdapter.Comput
         Computer computer = computerList.get(position);
         holder.modelName.setText(computer.getModel());
         holder.brandName.setText(computer.getBrandName());
-        holder.price.setText(String.format(Locale.getDefault(), "RWF %,.0f", computer.getPrice()));
+        holder.serialNumber.setText("(" + computer.getSerialNumber() + ")"); // Parentheses for style
 
-        if (computer.getImageUri() != null && !computer.getImageUri().isEmpty()) {
-            try {
-                holder.image.setImageURI(Uri.parse(computer.getImageUri()));
-            } catch (Exception e) {
-                holder.image.setImageResource(R.mipmap.ic_launcher);
-            }
+        if (computer.getDateAdded() != null) {
+            holder.dateAdded.setText(computer.getDateAdded());
         } else {
-            holder.image.setImageResource(R.mipmap.ic_launcher);
+            holder.dateAdded.setText("-");
         }
+
+        // New Fields
+        if (holder.location != null) {
+            holder.location.setText("Location: " + computer.getLocation());
+        }
+
+        if (holder.status != null) {
+            holder.status.setText(computer.getStatus());
+            // Optional: Change color based on status
+            if ("Inactive".equalsIgnoreCase(computer.getStatus())) {
+                holder.status.setTextColor(android.graphics.Color.RED);
+            } else {
+                holder.status.setTextColor(context.getResources().getColor(R.color.teal_700));
+            }
+        }
+
+        // Image handling removed/hidden
+        // holder.image.setImageResource(R.mipmap.ic_launcher);
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -70,15 +84,18 @@ public class ComputerAdapter extends RecyclerView.Adapter<ComputerAdapter.Comput
     }
 
     static class ComputerViewHolder extends RecyclerView.ViewHolder {
-        TextView modelName, brandName, price;
-        ImageView image;
+        TextView modelName, brandName, serialNumber, dateAdded, location, status;
+        // ImageView image; // Removed
 
         public ComputerViewHolder(@NonNull View itemView) {
             super(itemView);
             modelName = itemView.findViewById(R.id.computer_model);
             brandName = itemView.findViewById(R.id.computer_brand);
-            price = itemView.findViewById(R.id.computer_price);
-            image = itemView.findViewById(R.id.computer_image);
+            serialNumber = itemView.findViewById(R.id.computer_serial);
+            dateAdded = itemView.findViewById(R.id.computer_date);
+            location = itemView.findViewById(R.id.computer_location);
+            status = itemView.findViewById(R.id.computer_status);
+            // image = itemView.findViewById(R.id.computer_image);
         }
     }
 }

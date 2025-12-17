@@ -6,14 +6,18 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,18 +40,20 @@ import java.util.Locale;
 
 public class Fragment1 extends Fragment {
 
-    private EditText etModel, etPrice;
-    private TextView tvDate;
+    private EditText etModel, etSerial, etLocation, etDate;
     private Spinner spinnerBrand;
-    private CheckBox cbLaptop;
+    private ImageButton btnAddBrand;
     private ImageView ivPreview;
     private Button btnSave, btnPickImage;
     private Button btnCancel;
+    private RadioGroup rgStatus;
+    private RadioButton rbActive, rbInactive;
 
     private DatabaseHelper dbHelper;
     private Uri selectedImageUri;
     private Uri tempImageUri; // For Camera
     private List<Brand> brandList;
+    private Calendar calendar;
 
     private static final String ARG_COMPUTER_ID = "computer_id";
     private long computerId = -1;
@@ -101,24 +107,37 @@ public class Fragment1 extends Fragment {
         View view = inflater.inflate(R.layout.fragment_1, container, false);
 
         dbHelper = new DatabaseHelper(requireContext());
+        calendar = Calendar.getInstance();
 
         etModel = view.findViewById(R.id.et_model);
-        etPrice = view.findViewById(R.id.et_price);
-        tvDate = view.findViewById(R.id.tv_date);
+        etSerial = view.findViewById(R.id.et_serial);
+        etLocation = view.findViewById(R.id.et_location);
+        etDate = view.findViewById(R.id.et_date); // Bind Date Field
         spinnerBrand = view.findViewById(R.id.spinner_brand);
-        cbLaptop = view.findViewById(R.id.cb_laptop);
+        btnAddBrand = view.findViewById(R.id.btn_add_brand_inline);
         ivPreview = view.findViewById(R.id.iv_preview);
         btnSave = view.findViewById(R.id.btn_save);
         btnPickImage = view.findViewById(R.id.btn_pick_image);
         btnCancel = view.findViewById(R.id.btn_cancel);
+        rgStatus = view.findViewById(R.id.rg_status);
+        rbActive = view.findViewById(R.id.rb_active);
+        rbInactive = view.findViewById(R.id.rb_inactive);
+
+        // Date Picker Logic
+        etDate.setOnClickListener(v -> showDatePicker());
+        // Init with today's date if empty
+        if (etDate.getText().toString().isEmpty()) {
+            updateLabel();
+        }
 
         loadBrands();
-        setupDatePicker();
 
         if (isEditMode) {
             loadComputerData();
             btnSave.setText(R.string.btn_update);
         }
+
+        btnAddBrand.setOnClickListener(v -> showAddBrandDialog());
 
         btnPickImage.setOnClickListener(v -> showImageSourceDialog());
 
@@ -135,19 +154,47 @@ public class Fragment1 extends Fragment {
         return view;
     }
 
+    private void showDatePicker() {
+        DatePickerDialog.OnDateSetListener date = (view, year, month, day) -> {
+            calendar.set(Calendar.YEAR, year);
+            calendar.set(Calendar.MONTH, month);
+            calendar.set(Calendar.DAY_OF_MONTH, day);
+            updateLabel();
+        };
+        new DatePickerDialog(requireContext(), date, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)).show();
+    }
+
+    private void updateLabel() {
+        String myFormat = "dd/MM/yyyy";
+        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+        etDate.setText(sdf.format(calendar.getTime()));
+    }
+
     private void loadComputerData() {
         Computer computer = dbHelper.getComputer(computerId);
         if (computer != null) {
             etModel.setText(computer.getModel());
-            etPrice.setText(String.valueOf(computer.getPrice()));
-            tvDate.setText(computer.getPurchaseDate());
-            cbLaptop.setChecked(computer.isLaptop());
+            etSerial.setText(computer.getSerialNumber());
+            etLocation.setText(computer.getLocation());
+            if (computer.getDateAdded() != null) {
+                etDate.setText(computer.getDateAdded());
+            }
 
-            // Set Spinner Selection
-            for (int i = 0; i < brandList.size(); i++) {
-                if (brandList.get(i).getId() == computer.getBrandId()) {
-                    spinnerBrand.setSelection(i);
-                    break;
+            // Set Status
+            if ("Inactive".equalsIgnoreCase(computer.getStatus())) {
+                rbInactive.setChecked(true);
+            } else {
+                rbActive.setChecked(true);
+            }
+
+            // Set Spinner Selection (Safe check)
+            if (brandList != null) {
+                for (int i = 0; i < brandList.size(); i++) {
+                    if (brandList.get(i).getId() == computer.getBrandId()) {
+                        spinnerBrand.setSelection(i);
+                        break;
+                    }
                 }
             }
 
@@ -205,73 +252,130 @@ public class Fragment1 extends Fragment {
 
     private void loadBrands() {
         brandList = dbHelper.getAllBrands();
+        if (brandList.isEmpty()) {
+            // Optional: Provide a hint or force add a default brand if none exist
+            // But seeding in DB helper should handle this.
+            Log.w("Fragment1", "Brand list is empty after load");
+        }
         ArrayAdapter<Brand> adapter = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_dropdown_item, brandList);
         spinnerBrand.setAdapter(adapter);
     }
 
-    private void setupDatePicker() {
-        tvDate.setOnClickListener(v -> {
-            final Calendar c = Calendar.getInstance();
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
+    private void showAddBrandDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Add New Brand");
 
-            DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
-                    (view, year1, monthOfYear, dayOfMonth) -> {
-                        String date = String.format(Locale.getDefault(), "%d-%02d-%02d", year1, monthOfYear + 1,
-                                dayOfMonth);
-                        tvDate.setText(date);
-                    }, year, month, day);
-            datePickerDialog.show();
+        final EditText input = new EditText(requireContext());
+        input.setHint("Brand Name");
+        int padding = (int) (16 * getResources().getDisplayMetrics().density);
+        input.setPadding(padding, padding / 2, padding, padding / 2);
+        builder.setView(input);
+
+        builder.setPositiveButton("Add", (dialog, which) -> {
+            String newBrandName = input.getText().toString().trim();
+            if (!newBrandName.isEmpty()) {
+                if (dbHelper.isBrandExists(newBrandName)) {
+                    Toast.makeText(requireContext(), "Brand already exists!", Toast.LENGTH_SHORT).show();
+                } else {
+                    long id = dbHelper.addBrand(newBrandName, "Added via Add Computer");
+                    if (id != -1) {
+                        Toast.makeText(requireContext(), "Brand Added!", Toast.LENGTH_SHORT).show();
+                        loadBrands(); // Refresh spinner
+                        // Select new brand
+                        for (int i = 0; i < brandList.size(); i++) {
+                            if (brandList.get(i).getId() == id) {
+                                spinnerBrand.setSelection(i);
+                                break;
+                            }
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "Error adding brand", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            } else {
+                Toast.makeText(requireContext(), "Brand name required", Toast.LENGTH_SHORT).show();
+            }
         });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        builder.show();
     }
 
     private void saveComputer() {
-        String model = etModel.getText().toString().trim();
-        String priceStr = etPrice.getText().toString().trim();
-        String date = tvDate.getText().toString().trim();
-        boolean isLaptop = cbLaptop.isChecked();
-        Brand selectedBrand = (Brand) spinnerBrand.getSelectedItem();
-
-        if (model.isEmpty() || priceStr.isEmpty() || date.equals(getString(R.string.hint_date))) {
-            Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        double price;
         try {
-            price = Double.parseDouble(priceStr);
-        } catch (NumberFormatException e) {
-            Toast.makeText(requireContext(), "Invalid Price Format", Toast.LENGTH_SHORT).show();
-            return;
-        }
+            String model = etModel.getText().toString().trim();
+            String serial = etSerial.getText().toString().trim();
+            String location = etLocation.getText().toString().trim();
+            String dateAdded = etDate.getText().toString().trim();
 
-        String imageUriString = (selectedImageUri != null) ? selectedImageUri.toString() : "";
+            // Safety check for spinner
+            Brand selectedBrand = null;
+            Object selectedItem = spinnerBrand.getSelectedItem();
+            if (selectedItem instanceof Brand) {
+                selectedBrand = (Brand) selectedItem;
+            } else if (selectedItem != null) {
+                Log.e("Fragment1", "Spinner item is not a Brand object: " + selectedItem.getClass().getName());
+            }
 
-        if (isEditMode) {
-            Computer computer = new Computer(computerId, model, price, date, isLaptop, imageUriString,
-                    selectedBrand.getId());
-            int result = dbHelper.updateComputer(computer);
-            if (result > 0) {
-                Toast.makeText(requireContext(), "Computer Updated!", Toast.LENGTH_SHORT).show();
-                if (getParentFragmentManager().getBackStackEntryCount() > 0) {
-                    getParentFragmentManager().popBackStack();
+            // Handle Status
+            String status = "Active";
+            if (rbInactive != null && rbInactive.isChecked()) {
+                status = "Inactive";
+            }
+
+            if (model.isEmpty() || serial.isEmpty() || location.isEmpty()) {
+                Toast.makeText(requireContext(), "Please fill all fields: Name, Serial, Location", Toast.LENGTH_LONG)
+                        .show();
+                return;
+            }
+
+            if (selectedBrand == null) {
+                Toast.makeText(requireContext(), "Please select a brand. Add one if list is empty.", Toast.LENGTH_LONG)
+                        .show();
+                return;
+            }
+
+            String imageUriString = (selectedImageUri != null) ? selectedImageUri.toString() : "";
+
+            if (isEditMode) {
+                // Update with Date
+                Computer computer = new Computer(computerId, model, serial, location, imageUriString,
+                        selectedBrand.getId(), dateAdded);
+                computer.setStatus(status);
+
+                int result = dbHelper.updateComputer(computer);
+                if (result > 0) {
+                    Toast.makeText(requireContext(), "Machine Updated!", Toast.LENGTH_SHORT).show();
+                    if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+                        getParentFragmentManager().popBackStack();
+                    } else {
+                        requireActivity().finish();
+                    }
                 } else {
-                    requireActivity().finish();
+                    Toast.makeText(requireContext(), "Error updating machine: DB Update Failed", Toast.LENGTH_SHORT)
+                            .show();
                 }
             } else {
-                Toast.makeText(requireContext(), "Error updating computer", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Computer computer = new Computer(model, price, date, isLaptop, imageUriString, selectedBrand.getId());
-            long result = dbHelper.addComputer(computer);
+                // Add with Date
+                Computer computer = new Computer(model, serial, location, imageUriString, selectedBrand.getId(),
+                        dateAdded);
+                computer.setStatus(status);
 
-            if (result != -1) {
-                Toast.makeText(requireContext(), "Computer Saved!", Toast.LENGTH_SHORT).show();
-                requireActivity().finish(); // Go back to Activity2
-            } else {
-                Toast.makeText(requireContext(), "Error saving computer", Toast.LENGTH_SHORT).show();
+                long result = dbHelper.addComputer(computer);
+
+                if (result != -1) {
+                    Toast.makeText(requireContext(), "Machine Saved!", Toast.LENGTH_SHORT).show();
+                    requireActivity().finish(); // Go back to Activity2
+                } else {
+                    Log.e("Fragment1", "Failed to add machine to DB");
+                    Toast.makeText(requireContext(), "DB Error: Could not save machine.", Toast.LENGTH_LONG).show();
+                }
             }
+        } catch (Exception e) {
+            Log.e("Fragment1", "CRITICAL ERROR in saveComputer", e);
+            String errorMsg = (e.getMessage() != null) ? e.getMessage() : e.getClass().getSimpleName();
+            Toast.makeText(requireContext(), "Error: " + errorMsg, Toast.LENGTH_LONG).show();
         }
     }
 }

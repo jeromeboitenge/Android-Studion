@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:elevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_machine_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Machine Name"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="#263238"/>
+
+            <TextView
+                android:id="@+id/tv_serial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SN-12345"
+                android:textSize="14sp"
+                android:textColor="#546E7A"/>
+
+            <TextView
+                android:id="@+id/tv_brand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Brand: Dell"
+                android:textSize="14sp"
+                android:textColor="#546E7A"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+                
+                <TextView
+                    android:id="@+id/tv_location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Warehouse A"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="12dp"
+                    android:textStyle="italic"/>
+                
+                <TextView
+                    android:id="@+id/tv_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12/12/2024"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="12dp"
+                    android:textColor="#757575"/>
+
+                <TextView
+                    android:id="@+id/tv_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Active"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#43A047"/>
+            </LinearLayout>
+        </LinearLayout>
+        
+        <ImageButton
+            android:id="@+id/btn_delete_machine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete"
+            android:tint="#D32F2F"/>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

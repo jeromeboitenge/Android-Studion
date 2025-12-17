@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -14,9 +15,10 @@ import java.util.List;
 
 public class ActivityBrands extends AppCompatActivity {
 
+    private TextView emptyView;
+    private DatabaseHelper dbHelper;
     private RecyclerView recyclerView;
     private BrandAdapter adapter;
-    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +32,7 @@ public class ActivityBrands extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
         recyclerView = findViewById(R.id.recycler_view_brands);
+        emptyView = findViewById(R.id.tv_empty_brands);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         loadBrands();
@@ -40,6 +43,15 @@ public class ActivityBrands extends AppCompatActivity {
 
     private void loadBrands() {
         List<Brand> brands = dbHelper.getAllBrands();
+
+        if (brands.isEmpty()) {
+            emptyView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
+
         if (adapter == null) {
             adapter = new BrandAdapter(brands, new BrandAdapter.OnBrandActionListener() {
                 @Override
@@ -84,20 +96,28 @@ public class ActivityBrands extends AppCompatActivity {
 
             if (!name.isEmpty()) {
                 if (isEdit) {
-                    int result = dbHelper.updateBrand(brandToEdit.getId(), name, desc);
-                    if (result > 0) {
-                        Toast.makeText(ActivityBrands.this, "Brand Updated", Toast.LENGTH_SHORT).show();
-                        loadBrands();
+                    if (!name.equalsIgnoreCase(brandToEdit.getName()) && dbHelper.isBrandExists(name)) {
+                        Toast.makeText(ActivityBrands.this, "Brand name already exists", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(ActivityBrands.this, "Error updating brand", Toast.LENGTH_SHORT).show();
+                        int result = dbHelper.updateBrand(brandToEdit.getId(), name, desc);
+                        if (result > 0) {
+                            Toast.makeText(ActivityBrands.this, "Brand Updated", Toast.LENGTH_SHORT).show();
+                            loadBrands();
+                        } else {
+                            Toast.makeText(ActivityBrands.this, "Error updating brand", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 } else {
-                    long result = dbHelper.addBrand(name, desc);
-                    if (result != -1) {
-                        Toast.makeText(ActivityBrands.this, "Brand Added", Toast.LENGTH_SHORT).show();
-                        loadBrands();
+                    if (dbHelper.isBrandExists(name)) {
+                        Toast.makeText(ActivityBrands.this, "Brand name already exists", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(ActivityBrands.this, "Error adding brand", Toast.LENGTH_SHORT).show();
+                        long result = dbHelper.addBrand(name, desc);
+                        if (result != -1) {
+                            Toast.makeText(ActivityBrands.this, "Brand Added", Toast.LENGTH_SHORT).show();
+                            loadBrands();
+                        } else {
+                            Toast.makeText(ActivityBrands.this, "Error adding brand", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
             } else {
@@ -109,16 +129,24 @@ public class ActivityBrands extends AppCompatActivity {
     }
 
     private void showDeleteConfirmation(final Brand brand) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Brand")
-                .setMessage("Are you sure you want to delete " + brand.getName() + "?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    dbHelper.deleteBrand(brand.getId());
-                    Toast.makeText(ActivityBrands.this, "Brand Deleted", Toast.LENGTH_SHORT).show();
-                    loadBrands();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        if (dbHelper.isBrandUsed(brand.getId())) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Cannot Delete Brand")
+                    .setMessage("This brand is assigned to one or more computers. Please remove the computers first.")
+                    .setPositiveButton("OK", null)
+                    .show();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Brand")
+                    .setMessage("Are you sure you want to delete " + brand.getName() + "?")
+                    .setPositiveButton("Delete", (dialog, which) -> {
+                        dbHelper.deleteBrand(brand.getId());
+                        Toast.makeText(ActivityBrands.this, "Brand Deleted", Toast.LENGTH_SHORT).show();
+                        loadBrands();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        }
     }
 
     private void showAddBrandDialog() {

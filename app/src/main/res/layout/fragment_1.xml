@@ -8,20 +8,40 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-
+        
+        <!-- Brand Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/label_brand"
             android:textSize="@dimen/text_size_small"/>
 
-        <Spinner
-            android:id="@+id/spinner_brand"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:layout_marginBottom="@dimen/padding_medium"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/padding_medium">
 
+            <Spinner
+                android:id="@+id/spinner_brand"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:layout_weight="1"/>
+            
+            <ImageButton
+                android:id="@+id/btn_add_brand_inline"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_input_add"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Add New Brand"
+                android:tint="@color/primary_color"/>
+
+        </LinearLayout>
+
+        <!-- Machine Name (Model) -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -31,42 +51,85 @@
                 android:id="@+id/et_model"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_model"
+                android:hint="Machine Name"
                 android:inputType="textCapWords"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Serial Number -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/padding_medium">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_price"
+                android:id="@+id/et_serial"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Price (RWF)"
-                android:inputType="numberDecimal"/>
+                android:hint="Serial Number"
+                android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:id="@+id/tv_date"
+        
+        <!-- Location -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/hint_date"
-            android:textSize="@dimen/text_size_medium"
-            android:padding="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:drawableEnd="@android:drawable/ic_menu_my_calendar"
-            android:layout_marginBottom="@dimen/padding_medium"/>
+            android:layout_marginBottom="@dimen/padding_medium">
 
-        <CheckBox
-            android:id="@+id/cb_laptop"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Location"
+                android:inputType="textCapWords"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Date Added -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/padding_medium">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Installation Date"
+                android:focusable="false"
+                android:inputType="none"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Status Section -->
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/label_laptop"
-            android:textSize="@dimen/text_size_medium"
-            android:layout_marginBottom="@dimen/padding_medium"/>
-
+            android:text="Status"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"/>
+            
+        <RadioGroup
+            android:id="@+id/rg_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/padding_medium">
+            
+            <RadioButton
+                android:id="@+id/rb_active"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Active"
+                android:checked="true"
+                android:layout_marginEnd="16dp"/>
+                
+            <RadioButton
+                android:id="@+id/rb_inactive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Inactive"/>
+                
+        </RadioGroup>
+        
+        <!-- Image Section -->
         <Button
             android:id="@+id/btn_pick_image"
             android:layout_width="wrap_content"

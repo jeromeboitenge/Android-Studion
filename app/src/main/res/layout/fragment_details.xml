@@ -12,19 +12,20 @@
 
         <ImageView
             android:id="@+id/iv_detail_image"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:src="@mipmap/ic_launcher"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
             android:scaleType="centerInside"
+            android:src="@mipmap/ic_launcher"
             android:layout_marginBottom="@dimen/padding_large"/>
 
         <TextView
             android:id="@+id/tv_detail_model"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Model Name"
-            android:textSize="@dimen/text_size_large"
+            android:text="Machine Name"
+            android:textSize="24sp"
             android:textStyle="bold"
+            android:textColor="@color/black"
             android:layout_marginBottom="@dimen/padding_small"/>
 
         <TextView
@@ -32,35 +33,107 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Brand Name"
-            android:textSize="@dimen/text_size_medium"
-            android:textColor="@color/black"
-            android:layout_marginBottom="@dimen/padding_small"/>
+            android:textSize="18sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="@dimen/padding_medium"/>
 
-        <TextView
-            android:id="@+id/tv_detail_price"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="$0.00"
-            android:textSize="@dimen/text_size_medium"
-            android:textColor="@color/primary_color"
-            android:textStyle="bold"
-            android:layout_marginBottom="@dimen/padding_small"/>
+            android:orientation="vertical"
+            android:background="#F5F5F5"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Serial Number:"
+                    android:textStyle="bold"/>
+                    
+                <TextView
+                    android:id="@+id/tv_detail_serial"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Unknown"
+                    android:textColor="#333333"/>
+            </LinearLayout>
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Location:"
+                    android:textStyle="bold"/>
+                    
+                <TextView
+                    android:id="@+id/tv_detail_location"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Unknown"
+                    android:textColor="#333333"/>
+            </LinearLayout>
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
 
-        <TextView
-            android:id="@+id/tv_detail_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Purchase Date"
-            android:textSize="@dimen/text_size_small"
-            android:layout_marginBottom="@dimen/padding_small"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Date Added:"
+                    android:textStyle="bold"/>
 
-        <CheckBox
-            android:id="@+id/cb_detail_laptop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_laptop"
-            android:enabled="false"
-            android:layout_marginBottom="@dimen/padding_large"/>
+                <TextView
+                    android:id="@+id/tv_detail_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="12/12/2024"
+                    android:textColor="#333333"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Status:"
+                    android:textStyle="bold"/>
+                    
+                <TextView
+                    android:id="@+id/tv_detail_status"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Active"
+                    android:textColor="#4CAF50"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -69,23 +142,24 @@
             android:weightSum="2">
 
             <Button
-                android:id="@+id/btn_detail_delete"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/btn_delete"
-                android:backgroundTint="@android:color/holo_red_light"
-                android:textColor="@color/white"
-                android:layout_marginEnd="8dp"/>
-
-            <Button
-                android:id="@+id/btn_detail_edit"
+                android:id="@+id/btn_edit"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/btn_edit"
-                android:backgroundTint="@color/primary_color"
+                android:backgroundTint="@color/accent_color"
+                android:textColor="@color/white"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btn_delete"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/btn_delete"
+                android:backgroundTint="@android:color/holo_red_dark"
                 android:textColor="@color/white"/>
         </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

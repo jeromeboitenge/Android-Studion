@@ -2,35 +2,49 @@ package com.example.assignment1;
 
 public class Computer {
     private long id;
-    private String model;
-    private double price;
-    private String purchaseDate;
-    private boolean isLaptop;
+    private String model; // Machine Name
+    private String serialNumber;
+    private String location;
     private String imageUri;
     private long brandId;
+    private String brandName; // For display
+    private String status; // Active/Inactive
+    private String dateAdded; // New field
 
-    // Helper to store Brand Name if needed for display, though standard way is to
-    // query
-    private String brandName;
-
-    public Computer(long id, String model, double price, String purchaseDate, boolean isLaptop, String imageUri,
-            long brandId) {
-        this.id = id;
-        this.model = model;
-        this.price = price;
-        this.purchaseDate = purchaseDate;
-        this.isLaptop = isLaptop;
-        this.imageUri = imageUri;
-        this.brandId = brandId;
+    public Computer() {
     }
 
-    public Computer(String model, double price, String purchaseDate, boolean isLaptop, String imageUri, long brandId) {
+    public Computer(long id, String model, String serialNumber, String location, String imageUri, long brandId,
+            String dateAdded) {
+        this.id = id;
         this.model = model;
-        this.price = price;
-        this.purchaseDate = purchaseDate;
-        this.isLaptop = isLaptop;
+        this.serialNumber = serialNumber;
+        this.location = location;
         this.imageUri = imageUri;
         this.brandId = brandId;
+        this.status = "Active";
+        this.dateAdded = dateAdded;
+    }
+
+    public Computer(String model, String serialNumber, String location, String imageUri, long brandId,
+            String dateAdded) {
+        this.model = model;
+        this.serialNumber = serialNumber;
+        this.location = location;
+        this.imageUri = imageUri;
+        this.brandId = brandId;
+        this.status = "Active";
+        this.dateAdded = dateAdded;
+    }
+
+    // Constructor without date for backward compatibility (optional, but good
+    // practice)
+    public Computer(long id, String model, String serialNumber, String location, String imageUri, long brandId) {
+        this(id, model, serialNumber, location, imageUri, brandId, null);
+    }
+
+    public Computer(String model, String serialNumber, String location, String imageUri, long brandId) {
+        this(model, serialNumber, location, imageUri, brandId, null);
     }
 
     public long getId() {
@@ -49,28 +63,20 @@ public class Computer {
         this.model = model;
     }
 
-    public double getPrice() {
-        return price;
+    public String getSerialNumber() {
+        return serialNumber;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
     }
 
-    public String getPurchaseDate() {
-        return purchaseDate;
+    public String getLocation() {
+        return location;
     }
 
-    public void setPurchaseDate(String purchaseDate) {
-        this.purchaseDate = purchaseDate;
-    }
-
-    public boolean isLaptop() {
-        return isLaptop;
-    }
-
-    public void setLaptop(boolean laptop) {
-        isLaptop = laptop;
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public String getImageUri() {
@@ -95,5 +101,21 @@ public class Computer {
 
     public void setBrandName(String brandName) {
         this.brandName = brandName;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getDateAdded() {
+        return dateAdded;
+    }
+
+    public void setDateAdded(String dateAdded) {
+        this.dateAdded = dateAdded;
     }
 }

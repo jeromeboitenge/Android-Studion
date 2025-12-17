@@ -22,16 +22,16 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NetworkActivity extends AppCompatActivity {
+public class NetworkActivity extends AppCompatActivity implements NetworkAdapter.OnNetworkItemActionListener {
 
-    // IMPORTANT: Updated for Physical Device testing
-    // Was: "http://10.0.2.2:3000/api/machines"
+    // Updated to Local IP for Physical Device support
     private static final String BASE_URL = "http://10.45.204.208:3000/api/machines";
 
     private RecyclerView recyclerView;
     private NetworkAdapter adapter;
     private RequestQueue requestQueue;
     private List<Machine> machineList;
+    private NetworkFormFragment formFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +44,11 @@ public class NetworkActivity extends AppCompatActivity {
         machineList = new ArrayList<>();
         requestQueue = Volley.newRequestQueue(this);
 
-        fetchData();
+        // Find fragment
+        formFragment = (NetworkFormFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_container_network);
 
-        // Toast.makeText(this, "Tethering: Use Computer IP if on real device!",
-        // Toast.LENGTH_LONG).show();
+        fetchData();
     }
 
     public void refreshData() {
@@ -75,7 +76,6 @@ public class NetworkActivity extends AppCompatActivity {
                                 long brandId = jsonObject.optLong("brand_id", -1);
                                 String brandName = jsonObject.optString("brand_name", "");
 
-                                // Simple formatter if needed, or raw string from server
                                 if (dateAdded.length() > 10) {
                                     dateAdded = dateAdded.substring(0, 10);
                                 }
@@ -83,8 +83,8 @@ public class NetworkActivity extends AppCompatActivity {
                                 machineList.add(
                                         new Machine(id, name, serial, status, location, dateAdded, brandId, brandName));
                             }
-
-                            adapter = new NetworkAdapter(machineList, id -> deleteMachine(id));
+                            // Pass 'this' as listener
+                            adapter = new NetworkAdapter(machineList, NetworkActivity.this);
                             recyclerView.setAdapter(adapter);
 
                         } catch (JSONException e) {
@@ -110,7 +110,8 @@ public class NetworkActivity extends AppCompatActivity {
         return requestQueue;
     }
 
-    private void deleteMachine(long id) {
+    @Override
+    public void onDeleteClick(long id) {
         String url = BASE_URL + "/" + id;
 
         StringRequest deleteRequest = new StringRequest(
@@ -118,6 +119,9 @@ public class NetworkActivity extends AppCompatActivity {
                 url,
                 response -> {
                     Toast.makeText(this, "Machine deleted", Toast.LENGTH_SHORT).show();
+                    // If we were editing this machine, reset form
+                    if (formFragment != null)
+                        formFragment.resetForm();
                     fetchData();
                 },
                 error -> {
@@ -125,6 +129,17 @@ public class NetworkActivity extends AppCompatActivity {
                     Toast.makeText(this, "Delete failed", Toast.LENGTH_SHORT).show();
                 });
         requestQueue.add(deleteRequest);
+    }
+
+    @Override
+    public void onEditClick(Machine machine) {
+        if (formFragment != null) {
+            formFragment.prepareEdit(machine);
+            // Scroll to top to show form
+            findViewById(R.id.fragment_container_network).getParent().requestChildFocus(
+                    findViewById(R.id.fragment_container_network), findViewById(R.id.fragment_container_network));
+            Toast.makeText(this, "Editing " + machine.getName(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     public String getBaseUrl() {

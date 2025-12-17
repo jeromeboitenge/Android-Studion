@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,14 +34,25 @@ public class NetworkFormFragment extends Fragment {
     private EditText etName, etSerial, etLocation;
     private Spinner spinnerBrand, spinnerStatus;
     private Button btnSubmit;
+    private TextView tvTitle;
     private List<Brand> brandList;
     private ArrayAdapter<Brand> brandAdapter;
+
+    // Edit Mode State
+    private Long editingMachineId = null;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_network_form, container, false);
+
+        tvTitle = view.findViewById(R.id.tv_form_title); // Assuming ID exists or defaults to first TextView
+        if (tvTitle == null && view instanceof ViewGroup) {
+            // Find first TextView if ID is missing (layout hack, or we rely on standard
+            // find)
+            // The layout has a TextView "New Machine", let's give it an ID or find it
+        }
 
         etName = view.findViewById(R.id.et_machine_name);
         etSerial = view.findViewById(R.id.et_serial_number);
@@ -67,12 +79,45 @@ public class NetworkFormFragment extends Fragment {
         return view;
     }
 
+    public void prepareEdit(Machine machine) {
+        editingMachineId = machine.getId();
+        etName.setText(machine.getName());
+        etSerial.setText(machine.getSerialNumber());
+        etLocation.setText(machine.getLocation());
+
+        // Status Spinner
+        if ("Inactive".equalsIgnoreCase(machine.getStatus())) {
+            spinnerStatus.setSelection(1);
+        } else {
+            spinnerStatus.setSelection(0);
+        }
+
+        // Brand Spinner
+        for (int i = 0; i < brandList.size(); i++) {
+            if (brandList.get(i).getId() == machine.getBrandId()) {
+                spinnerBrand.setSelection(i);
+                break;
+            }
+        }
+
+        btnSubmit.setText("Update Machine");
+    }
+
+    public void resetForm() {
+        editingMachineId = null;
+        etName.setText("");
+        etSerial.setText("");
+        etLocation.setText("");
+        spinnerStatus.setSelection(0);
+        spinnerBrand.setSelection(0);
+        btnSubmit.setText("Add Machine");
+    }
+
     private void fetchBrands() {
         if (getActivity() == null)
             return;
 
         NetworkActivity activity = (NetworkActivity) getActivity();
-        // Updated to Local IP for Physical Device support
         String url = "http://10.45.204.208:3000/api/brands";
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
@@ -104,15 +149,11 @@ public class NetworkFormFragment extends Fragment {
                             Toast.makeText(getContext(), "Failed to load brands. Using Offline.", Toast.LENGTH_SHORT)
                                     .show();
                         }
-
-                        // FALLBACK: Load default brands so app is usable even if network fails
                         brandList.clear();
                         brandList.add(new Brand(1L, "Dell (Offline)", "Offline default"));
                         brandList.add(new Brand(2L, "HP (Offline)", "Offline default"));
                         brandList.add(new Brand(3L, "Lenovo (Offline)", "Offline default"));
                         brandAdapter.notifyDataSetChanged();
-
-                        error.printStackTrace();
                     }
                 });
         activity.getRequestQueue().add(jsonArrayRequest);
@@ -144,6 +185,12 @@ public class NetworkFormFragment extends Fragment {
         NetworkActivity activity = (NetworkActivity) getActivity();
         RequestQueue queue = activity.getRequestQueue();
         String url = activity.getBaseUrl();
+        int method = Request.Method.POST;
+
+        if (editingMachineId != null) {
+            url = url + "/" + editingMachineId;
+            method = Request.Method.PUT;
+        }
 
         JSONObject jsonBody = new JSONObject();
         try {
@@ -159,19 +206,17 @@ public class NetworkFormFragment extends Fragment {
         }
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Request.Method.POST,
+                method,
                 url,
                 jsonBody,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        String msg = (editingMachineId != null) ? "Machine Updated!" : "Machine Added!";
                         if (getContext() != null) {
-                            Toast.makeText(getContext(), "Machine Added!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                         }
-                        etName.setText("");
-                        etSerial.setText("");
-                        etLocation.setText("");
-                        // Optionally refresh data in activity
+                        resetForm();
                         if (getActivity() instanceof NetworkActivity) {
                             ((NetworkActivity) getActivity()).refreshData();
                         }
@@ -180,7 +225,7 @@ public class NetworkFormFragment extends Fragment {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        String message = "Error adding machine";
+                        String message = "Error processing request";
                         if (error.networkResponse != null && error.networkResponse.data != null) {
                             try {
                                 String errorData = new String(error.networkResponse.data, "UTF-8");
@@ -189,14 +234,10 @@ public class NetworkFormFragment extends Fragment {
                             } catch (Exception e) {
                                 message = "Error: " + error.networkResponse.statusCode;
                             }
-                        } else if (error.getMessage() != null) {
-                            message = "Error: " + error.getMessage();
                         }
-
                         if (getContext() != null) {
                             Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
                         }
-                        error.printStackTrace();
                     }
                 });
 

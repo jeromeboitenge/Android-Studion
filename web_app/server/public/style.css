@@ -1,8 +1,11 @@
 /* Modern Color Palette */
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #34495e;
-    --accent-color: #3498db;
+    --primary-color: #009688;
+    /* Android Teal 500 */
+    --secondary-color: #00796B;
+    /* Android Teal 700 */
+    --accent-color: #FFC107;
+    /* Android Accent/Amber */
     --background-color: #ecf0f1;
     --text-color: #333;
     --white: #ffffff;
@@ -10,7 +13,8 @@
     --hover-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     --delete-color: #e74c3c;
     --edit-color: #f1c40f;
-    --info-color: #9b59b6;
+    --info-color: #00BCD4;
+    /* Cyan */
 }
 
 body {

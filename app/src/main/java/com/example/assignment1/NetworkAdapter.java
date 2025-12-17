@@ -13,16 +13,18 @@ import java.util.List;
 
 public class NetworkAdapter extends RecyclerView.Adapter<NetworkAdapter.ViewHolder> {
 
-    public interface OnItemDeleteListener {
+    public interface OnNetworkItemActionListener {
         void onDeleteClick(long id);
+
+        void onEditClick(Machine machine);
     }
 
     private List<Machine> machineList;
-    private OnItemDeleteListener deleteListener;
+    private OnNetworkItemActionListener actionListener;
 
-    public NetworkAdapter(List<Machine> machineList, OnItemDeleteListener deleteListener) {
+    public NetworkAdapter(List<Machine> machineList, OnNetworkItemActionListener actionListener) {
         this.machineList = machineList;
-        this.deleteListener = deleteListener;
+        this.actionListener = actionListener;
     }
 
     @NonNull
@@ -62,8 +64,14 @@ public class NetworkAdapter extends RecyclerView.Adapter<NetworkAdapter.ViewHold
         }
 
         holder.btnDelete.setOnClickListener(v -> {
-            if (deleteListener != null) {
-                deleteListener.onDeleteClick(machine.getId());
+            if (actionListener != null) {
+                actionListener.onDeleteClick(machine.getId());
+            }
+        });
+
+        holder.btnEdit.setOnClickListener(v -> {
+            if (actionListener != null) {
+                actionListener.onEditClick(machine);
             }
         });
     }
@@ -75,17 +83,18 @@ public class NetworkAdapter extends RecyclerView.Adapter<NetworkAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvSerial, tvLocation, tvStatus, tvDate, tvBrand;
-        ImageButton btnDelete;
+        ImageButton btnDelete, btnEdit;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_machine_name);
             tvSerial = itemView.findViewById(R.id.tv_serial);
-            tvBrand = itemView.findViewById(R.id.tv_brand); // New
+            tvBrand = itemView.findViewById(R.id.tv_brand);
             tvLocation = itemView.findViewById(R.id.tv_location);
             tvStatus = itemView.findViewById(R.id.tv_status);
             tvDate = itemView.findViewById(R.id.tv_date);
             btnDelete = itemView.findViewById(R.id.btn_delete_machine);
+            btnEdit = itemView.findViewById(R.id.btn_edit_machine);
         }
     }
 }

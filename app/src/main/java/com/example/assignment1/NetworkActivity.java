@@ -26,7 +26,7 @@ public class NetworkActivity extends AppCompatActivity {
 
     // IMPORTANT: Updated for Physical Device testing
     // Was: "http://10.0.2.2:3000/api/machines"
-    private static final String BASE_URL = "http://172.31.172.221:3000/api/machines";
+    private static final String BASE_URL = "http://10.45.204.208:3000/api/machines";
 
     private RecyclerView recyclerView;
     private NetworkAdapter adapter;
@@ -46,7 +46,8 @@ public class NetworkActivity extends AppCompatActivity {
 
         fetchData();
 
-        Toast.makeText(this, "Tethering: Use Computer IP if on real device!", Toast.LENGTH_LONG).show();
+        // Toast.makeText(this, "Tethering: Use Computer IP if on real device!",
+        // Toast.LENGTH_LONG).show();
     }
 
     public void refreshData() {

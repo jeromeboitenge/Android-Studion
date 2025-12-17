@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_footer"
     android:layout_width="match_parent"
     android:layout_height="56dp"
@@ -18,7 +19,7 @@
         android:background="?attr/selectableItemBackground"
         android:scaleType="centerInside"
         android:contentDescription="@string/btn_back"
-        android:tint="@color/text_primary"/>
+        app:tint="@color/text_primary"/>
 
     <ImageButton
         android:id="@+id/btn_nav_home"
@@ -29,7 +30,7 @@
         android:background="?attr/selectableItemBackground"
         android:scaleType="centerInside"
         android:contentDescription="@string/btn_home"
-        android:tint="@color/primary_color"/>
+        app:tint="@color/primary_color"/>
 
     <ImageButton
         android:id="@+id/btn_nav_exit"
@@ -40,6 +41,6 @@
         android:background="?attr/selectableItemBackground"
         android:scaleType="centerInside"
         android:contentDescription="@string/btn_exit"
-        android:tint="#D32F2F"/>
+        app:tint="#D32F2F"/>
 
 </LinearLayout>

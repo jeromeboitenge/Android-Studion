@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Machine Management System</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="professional.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; font-weight: bold; }
@@ -13,9 +15,44 @@
 <body>
     <header>
         <h1>Machine Management System</h1>
+        <nav>
+            <ul style="list-style: none; padding: 0; margin: 10px 0 0 0; display: flex; justify-content: center; gap: 20px;">
+                <li><a href="index.html" style="color: white; text-decoration: none; font-weight: bold; border-bottom: 2px solid white;">Dashboard</a></li>
+                <li><a href="management.html" style="color: rgba(255,255,255,0.8); text-decoration: none;">Management</a></li>
+                <li><a href="brands.html" style="color: rgba(255,255,255,0.8); text-decoration: none;">Brands</a></li>
+                <li><a href="reports.html" style="color: rgba(255,255,255,0.8); text-decoration: none;">Reports</a></li>
+            </ul>
+        </nav>
     </header>
 
     <main>
+        <!-- Stats Section -->
+        <section class="section-card" style="grid-column: 1 / -1;">
+            <h2 style="margin-bottom: 1.5rem;">📊 Dashboard Overview</h2>
+            <div id="dashboardStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+                <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; text-align: center; color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💻</div>
+                    <h3 style="margin: 0; font-size: 0.9rem; opacity: 0.9; font-weight: 500;">Total Machines</h3>
+                    <p id="statTotal" style="font-size: 3rem; font-weight: bold; margin: 10px 0 0 0;">-</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 2rem; border-radius: 12px; text-align: center; color: white; box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">✅</div>
+                    <h3 style="margin: 0; font-size: 0.9rem; opacity: 0.9; font-weight: 500;">Active</h3>
+                    <p id="statActive" style="font-size: 3rem; font-weight: bold; margin: 10px 0 0 0;">-</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 2rem; border-radius: 12px; text-align: center; color: white; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⏸️</div>
+                    <h3 style="margin: 0; font-size: 0.9rem; opacity: 0.9; font-weight: 500;">Inactive</h3>
+                    <p id="statInactive" style="font-size: 3rem; font-weight: bold; margin: 10px 0 0 0;">-</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 2rem; border-radius: 12px; text-align: center; color: white; box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏷️</div>
+                    <h3 style="margin: 0; font-size: 0.9rem; opacity: 0.9; font-weight: 500;">Total Brands</h3>
+                    <p id="statBrands" style="font-size: 3rem; font-weight: bold; margin: 10px 0 0 0;">-</p>
+                </div>
+            </div>
+        </section>
+
         <!-- Form Section -->
         <section class="section-card">
             <h2>+ Register Machine</h2>
@@ -82,6 +119,7 @@
         </div>
     </div>
 
+    <script src="utils.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

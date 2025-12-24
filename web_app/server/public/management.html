@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management - Machine System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="professional.css">
+    <style>
+        /* Specific styles for Management Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+        
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .bg-active { background-color: #e8f5e9; color: #2e7d32; }
+        .bg-inactive { background-color: #ffebee; color: #c62828; }
+
+        .search-bar {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Machine Management System</h1>
+        <nav>
+            <ul style="list-style: none; padding: 0; margin: 10px 0 0 0; display: flex; justify-content: center; gap: 20px;">
+                <li><a href="index.html" style="color: rgba(255,255,255,0.8); text-decoration: none;">Dashboard</a></li>
+                <li><a href="management.html" style="color: white; text-decoration: none; font-weight: bold; border-bottom: 2px solid white;">Management</a></li>
+                <li><a href="brands.html" style="color: rgba(255,255,255,0.8); text-decoration: none;">Brands</a></li>
+                <li><a href="reports.html" style="color: rgba(255,255,255,0.8); text-decoration: none;">Reports</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="section-card" style="grid-column: 1 / -1;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Detailed Inventory</h2>
+                <button onclick="fetchMachines()" class="refresh-btn">Refresh Data</button>
+            </div>
+
+            <input type="text" id="searchInput" class="search-bar" placeholder="Search by Name, Serial or Location..." onkeyup="filterTable()">
+
+            <div style="overflow-x: auto;">
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Serial Number</th>
+                            <th>Brand</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Rows populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Shared Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Machine</h2>
+            <form id="editForm">
+                <input type="hidden" id="edit_id">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="edit_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Serial Number</label>
+                    <input type="text" id="edit_serial" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="edit_location">
+                </div>
+                <div class="form-group">
+                    <label>Brand</label>
+                    <select id="edit_brand">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="edit_status">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <button type="submit">Update Machine</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Inline script for page-specific logic
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMachinesForTable();
+            loadBrandsForEdit();
+            
+            document.getElementById('editForm').addEventListener('submit', handleEditSubmit);
+        });
+
+        function fetchMachinesForTable() {
+            fetch('/api/machines')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('tableBody');
+                    tbody.innerHTML = '';
+                    data.forEach(m => {
+                        const tr = document.createElement('tr');
+                        const statusClass = m.status === 'Active' ? 'bg-active' : 'bg-inactive';
+                        // Save machine data in data-attribute for easy editing
+                        const machineData = encodeURIComponent(JSON.stringify(m));
+                        
+                        tr.innerHTML = `
+                            <td>${m.id}</td>
+                            <td>${m.name}</td>
+                            <td>${m.serial_number}</td>
+                            <td>${m.brand_name || 'N/A'}</td>
+                            <td>${m.location}</td>
+                            <td><span class="status-badge ${statusClass}">${m.status}</span></td>
+                            <td class="card-actions">
+                                <button class="action-btn edit-btn" onclick="openEditModal('${machineData}')">Edit</button>
+                                <button class="action-btn delete-btn" onclick="deleteMachineLocal(${m.id})">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => console.error(err));
+        }
+        
+        function loadBrandsForEdit() {
+            fetch('/api/brands')
+                .then(res => res.json())
+                .then(brands => {
+                    const select = document.getElementById('edit_brand');
+                    select.innerHTML = '<option value="">Select Brand</option>';
+                    brands.forEach(b => {
+                        const option = document.createElement('option');
+                        option.value = b.id;
+                        option.textContent = b.name;
+                        select.appendChild(option);
+                    });
+                });
+        }
+
+        function openEditModal(machineDataEncoded) {
+            const m = JSON.parse(decodeURIComponent(machineDataEncoded));
+            document.getElementById('edit_id').value = m.id;
+            document.getElementById('edit_name').value = m.name;
+            document.getElementById('edit_serial').value = m.serial_number;
+            document.getElementById('edit_location').value = m.location;
+            document.getElementById('edit_status').value = m.status;
+            document.getElementById('edit_brand').value = m.brand_id || "";
+            
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        async function handleEditSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit_id').value;
+            const data = {
+                name: document.getElementById('edit_name').value,
+                serial_number: document.getElementById('edit_serial').value,
+                location: document.getElementById('edit_location').value,
+                status: document.getElementById('edit_status').value,
+                brand_id: document.getElementById('edit_brand').value
+            };
+
+            try {
+                const res = await fetch(`/api/machines/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) {
+                    closeEditModal();
+                    fetchMachinesForTable();
+                    alert("Machine updated!");
+                } else {
+                    alert("Error updating machine");
+                }
+            } catch(err) {
+                console.error(err);
+                alert("Connection error");
+            }
+        }
+
+        async function deleteMachineLocal(id) {
+            if (!confirm('Are you sure you want to delete this machine?')) return;
+            try {
+                const res = await fetch(`/api/machines/${id}`, { method: 'DELETE' });
+                if(res.ok) fetchMachinesForTable();
+            } catch(err) { console.error(err); }
+        }
+
+        function filterTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('inventoryTable');
+            const trs = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < trs.length; i++) {
+                const tds = trs[i].getElementsByTagName('td');
+                let visible = false;
+                for (let j = 0; j < tds.length; j++) {
+                    if (tds[j] && tds[j].innerText.toLowerCase().indexOf(filter) > -1) {
+                        visible = true;
+                    }
+                }
+                trs[i].style.display = visible ? "" : "none";
+            }
+        }
+    </script>
+</body>
+</html>

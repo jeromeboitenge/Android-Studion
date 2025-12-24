@@ -152,6 +152,89 @@ app.get("/api/machines/:id/maintenance", (req, res, next) => {
     });
 });
 
+// POST /api/machines/:id/maintenance - Add maintenance log
+app.post("/api/machines/:id/maintenance", (req, res, next) => {
+    const { description, maintenance_date } = req.body;
+    const maintenanceType = req.body.maintenance_type || 'General';
+    const machineId = req.params.id;
+
+    if (!description) {
+        res.status(400).json({ "error": "Description is required" });
+        return;
+    }
+
+    const sql = "INSERT INTO machine_maintenance (machine_id, maintenance_date, description, maintenance_type) VALUES (?,?,?,?)";
+    // Default date to today if not provided
+    const date = maintenance_date || new Date().toISOString().split('T')[0];
+
+    db.run(sql, [machineId, date, description, maintenanceType], function (err, result) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            "message": "success",
+            "id": this.lastID
+        });
+    });
+});
+
+// DELETE /api/brands/:id - Delete brand (if unused)
+app.delete("/api/brands/:id", (req, res, next) => {
+    // First check if brand is used
+    db.get("SELECT COUNT(*) as count FROM machines WHERE brand_id = ?", [req.params.id], (err, row) => {
+        if (err) { res.status(400).json({ "error": err.message }); return; }
+
+        if (row.count > 0) {
+            res.status(400).json({ "error": "Cannot delete brand. It is assigned to " + row.count + " machine(s)." });
+            return;
+        }
+
+        db.run('DELETE FROM brands WHERE id = ?', req.params.id, function (err) {
+            if (err) {
+                res.status(400).json({ "error": err.message });
+                return;
+            }
+            res.json({ "message": "deleted", changes: this.changes });
+        });
+    });
+});
+
+// Get System Stats
+app.get('/api/stats', (req, res) => {
+    const stats = {
+        total_machines: 0,
+        active_machines: 0,
+        inactive_machines: 0,
+        total_brands: 0
+    };
+
+    const sqlMachines = "SELECT COUNT(*) as count, status FROM machines GROUP BY status";
+    const sqlBrands = "SELECT COUNT(*) as count FROM brands";
+
+    db.all(sqlMachines, [], (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+
+        rows.forEach(row => {
+            stats.total_machines += row.count;
+            if (row.status === 'Active') stats.active_machines = row.count;
+            if (row.status === 'Inactive') stats.inactive_machines = row.count;
+        });
+
+        db.get(sqlBrands, [], (err, brandRow) => {
+            if (err) {
+                res.status(400).json({ "error": err.message });
+                return;
+            }
+            stats.total_brands = brandRow.count;
+            res.json(stats);
+        });
+    });
+});
+
 // Start server
 app.listen(HTTP_PORT, () => {
     console.log(`Machine Server running on port ${HTTP_PORT}`);

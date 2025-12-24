@@ -4,25 +4,39 @@ let isEditing = false;
 let currentMachineId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadBrands(); // Load brands first
-    fetchMachines();
+    // Only load brands if the select element exists (for the form)
+    if (document.getElementById('brand')) {
+        loadBrands();
+    }
 
-    document.getElementById('machineForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // Only fetch machines if the list container exists
+    if (document.getElementById('machineList')) {
+        fetchMachines();
+    }
 
-        const id = document.getElementById('editId').value;
-        const name = document.getElementById('name').value;
-        const serial = document.getElementById('serial').value;
-        const location = document.getElementById('location').value;
-        const status = document.getElementById('status').value;
-        const brandId = document.getElementById('brand').value; // Get selected brand ID
+    if (document.getElementById('dashboardStats')) {
+        fetchStats();
+    }
 
-        if (isEditing && id) {
-            updateMachine(id, name, serial, location, status, brandId);
-        } else {
-            createMachine(name, serial, location, status, brandId);
-        }
-    });
+    const form = document.getElementById('machineForm');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('name').value;
+            const serial = document.getElementById('serial').value;
+            const location = document.getElementById('location').value;
+            const status = document.getElementById('status').value;
+            const brandId = document.getElementById('brand').value; // Get selected brand ID
+
+            if (isEditing && id) {
+                updateMachine(id, name, serial, location, status, brandId);
+            } else {
+                createMachine(name, serial, location, status, brandId);
+            }
+        });
+    }
 });
 
 async function loadBrands() {
@@ -113,9 +127,10 @@ async function handleResponse(response, isUpdate = false) {
     if (response.ok) {
         resetForm();
         fetchMachines();
+        Toast.success(isUpdate ? 'Machine updated successfully!' : 'Machine added successfully!');
     } else {
         const res = await response.json();
-        alert('Error: ' + (res.error || 'Unknown error'));
+        Toast.error('Error: ' + (res.error || 'Unknown error'));
     }
 }
 
@@ -134,19 +149,21 @@ function displayMachines(machines) {
     list.innerHTML = '';
 
     if (machines.length === 0) {
-        list.innerHTML = '<p>No machines found.</p>';
+        list.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">No machines found. Add your first machine above!</p>';
         return;
     }
 
     machines.forEach(m => {
         const card = document.createElement('div');
         card.className = 'computer-card';
+        const statusClass = m.status === 'Active' ? 'status-active' : 'status-inactive';
+
         card.innerHTML = `
             <h3>${m.name}</h3>
-            <div style="font-size: 0.9em; color: #555; font-weight: bold;">${m.brand_name || 'Unknown Brand'}</div> 
-            <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">SN: ${m.serial_number}</div>
-            <div style="font-size: 0.9em; margin-bottom: 5px;">Location: ${m.location}</div>
-            <div class="${m.status === 'Active' ? 'status-active' : 'status-inactive'}">${m.status}</div>
+            <div class="brand-name">${m.brand_name || 'Unknown Brand'}</div>
+            <div class="machine-info"><strong>Serial:</strong> ${m.serial_number}</div>
+            <div class="machine-info"><strong>Location:</strong> ${m.location || 'Not specified'}</div>
+            <div class="${statusClass}" style="margin: 0.8rem 0; font-weight: 600;">${m.status}</div>
             
             <div class="card-actions">
                 <button onclick="viewMaintenance(${m.id}, '${m.name}')" class="action-btn history-btn">History</button>
@@ -213,8 +230,61 @@ async function addMaintenanceLog() {
 
     if (!desc) { alert("Enter description"); return; }
 
-    // NOTE: This assumes we have a POST endpoint or we are just mocking for UI demo of "Linked Tables". 
-    // Since I must strictly follow "view details... from 2 linked tables", showing is enough.
-    // But to make it interactive, I'll alert the user.
-    alert("Maintenance Log feature is view-only for this proof of concept. To fully implement adding logs, a new API endpoint is required on the server.");
+    try {
+        const response = await fetch(`${API_URL}/${currentMachineId}/maintenance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description: desc, maintenance_date: date })
+        });
+
+        if (response.ok) {
+            Toast.success('Maintenance log added successfully!');
+        } else {
+            const res = await response.json();
+            Toast.error('Error: ' + res.error);
+        }
+    } catch (e) {
+        console.error(e);
+        Toast.error('Failed to add maintenance log');
+    }
+}
+
+async function deleteBrand(id) {
+    if (!confirm('Are you sure you want to delete this brand?')) return;
+
+    try {
+        const response = await fetch(`${BRANDS_API_URL}/${id}`, {
+            method: 'DELETE'
+        });
+        const res = await response.json();
+
+        if (response.ok) {
+            // Refresh the brand list (this function needs to be available or we reload)
+            if (typeof fetchBrandsList === 'function') {
+                fetchBrandsList();
+            } else {
+                window.location.reload();
+            }
+            Toast.success('Brand deleted successfully!');
+        } else {
+            Toast.error('Error: ' + res.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Toast.error('Failed to delete brand');
+    }
+}
+
+async function fetchStats() {
+    try {
+        const response = await fetch('/api/stats');
+        const stats = await response.json();
+
+        document.getElementById('statTotal').textContent = stats.total_machines;
+        document.getElementById('statActive').textContent = stats.active_machines;
+        document.getElementById('statInactive').textContent = stats.inactive_machines;
+        document.getElementById('statBrands').textContent = stats.total_brands;
+    } catch (error) {
+        console.error("Error loading stats:", error);
+    }
 }

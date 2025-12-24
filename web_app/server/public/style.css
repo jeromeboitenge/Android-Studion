@@ -155,17 +155,19 @@ button:hover {
 }
 
 .computer-card {
-    background: var(--background-color);
+    background: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
     position: relative;
     overflow: hidden;
-    transition: transform 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .computer-card:hover {
-    transform: scale(1.02);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .computer-card::before {
@@ -175,13 +177,37 @@ button:hover {
     left: 0;
     width: 4px;
     height: 100%;
-    background-color: var(--accent-color);
+    background: linear-gradient(180deg, var(--accent-color) 0%, var(--primary-color) 100%);
 }
 
 .computer-card h3 {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.8rem 0;
     color: var(--primary-color);
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.computer-card .brand-name {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+}
+
+.computer-card .machine-info {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.computer-card .machine-info strong {
+    color: #333;
+    font-weight: 600;
 }
 
 .card-actions {

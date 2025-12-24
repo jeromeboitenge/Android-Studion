@@ -25,7 +25,7 @@ import java.util.List;
 public class NetworkActivity extends AppCompatActivity implements NetworkAdapter.OnNetworkItemActionListener {
 
     // Updated to Local IP for Physical Device support
-    private static final String BASE_URL = "http://10.45.204.208:3000/api/machines";
+    private static final String BASE_URL = "http://172.31.89.202:3000/api/machines";
 
     private RecyclerView recyclerView;
     private NetworkAdapter adapter;

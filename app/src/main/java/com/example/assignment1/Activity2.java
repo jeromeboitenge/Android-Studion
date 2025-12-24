@@ -6,6 +6,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.content.Intent;
 import android.widget.TextView;
+import android.widget.Button;
+import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,6 +15,13 @@ import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Calendar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnComputerClickListener {
@@ -21,80 +30,224 @@ public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnCo
     private ComputerAdapter adapter;
     private DatabaseHelper dbHelper;
     private TextView emptyView;
+    private TextView tvCurrentDate;
+    private Button btnFilterAll, btnFilterActive, btnFilterInactive, btnFilterDell;
+    private TextView headerName, headerBrand, headerStatus;
+
+    private List<Computer> allComputers;
+    private String currentFilter = "ALL";
+    private String currentSortColumn = "name";
+    private boolean sortAscending = true;
+    private Calendar currentCalendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_2);
 
-        setTitle(R.string.title_activity_computer_list);
-
+        // Hide action bar for custom header
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().hide();
         }
 
         dbHelper = new DatabaseHelper(this);
+        currentCalendar = Calendar.getInstance();
+
+        // Initialize views
         recyclerView = findViewById(R.id.computer_recycler_view);
         emptyView = findViewById(R.id.empty_view);
+        tvCurrentDate = findViewById(R.id.tv_current_date);
+
+        // Filter buttons
+        btnFilterAll = findViewById(R.id.btn_filter_all);
+        btnFilterActive = findViewById(R.id.btn_filter_active);
+        btnFilterInactive = findViewById(R.id.btn_filter_inactive);
+        btnFilterDell = findViewById(R.id.btn_filter_dell);
+
+        // Column headers
+        headerName = findViewById(R.id.header_name);
+        headerBrand = findViewById(R.id.header_brand);
+        headerStatus = findViewById(R.id.header_status);
 
         setupNavigation();
-
-        FloatingActionButton fab = findViewById(R.id.fab_add_computer);
+        setupDateNavigation();
+        setupFilterButtons();
+        setupColumnHeaders();
+        updateDateDisplay();
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Activity2.this, Activity3.class);
-                intent.putExtra("mode", "ADD");
-                startActivity(intent);
-            }
+        FloatingActionButton fab = findViewById(R.id.fab_add_computer);
+        fab.setOnClickListener(v -> {
+            Intent intent = new Intent(Activity2.this, Activity3.class);
+            intent.putExtra("mode", "ADD");
+            startActivity(intent);
+        });
+
+        // Menu button
+        ImageButton btnMenu = findViewById(R.id.btn_menu);
+        btnMenu.setOnClickListener(v -> {
+            // Could open drawer or show menu
+        });
+
+        // Search button
+        ImageButton btnSearch = findViewById(R.id.btn_search_header);
+        btnSearch.setOnClickListener(v -> {
+            // Could open search dialog
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_search, menu);
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) searchItem.getActionView();
+    private void setupDateNavigation() {
+        ImageButton btnPrev = findViewById(R.id.btn_prev_date);
+        ImageButton btnNext = findViewById(R.id.btn_next_date);
 
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                performSearch(query);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                performSearch(newText);
-                return false;
-            }
+        btnPrev.setOnClickListener(v -> {
+            currentCalendar.add(Calendar.DAY_OF_MONTH, -1);
+            updateDateDisplay();
         });
-        return true;
+
+        btnNext.setOnClickListener(v -> {
+            currentCalendar.add(Calendar.DAY_OF_MONTH, 1);
+            updateDateDisplay();
+        });
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_manage_brands) {
-            startActivity(new Intent(this, ActivityBrands.class));
-            return true;
-        } else if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
+    private void updateDateDisplay() {
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE dd MMM yy", Locale.ENGLISH);
+        tvCurrentDate.setText(sdf.format(currentCalendar.getTime()));
+    }
+
+    private void setupFilterButtons() {
+        btnFilterAll.setOnClickListener(v -> applyFilter("ALL"));
+        btnFilterActive.setOnClickListener(v -> applyFilter("ACTIVE"));
+        btnFilterInactive.setOnClickListener(v -> applyFilter("INACTIVE"));
+        btnFilterDell.setOnClickListener(v -> applyFilter("DELL"));
+    }
+
+    private void applyFilter(String filter) {
+        currentFilter = filter;
+        updateFilterButtonStyles();
+        filterAndSortList();
+    }
+
+    private void updateFilterButtonStyles() {
+        // Reset all buttons
+        resetButtonStyle(btnFilterAll);
+        resetButtonStyle(btnFilterActive);
+        resetButtonStyle(btnFilterInactive);
+        resetButtonStyle(btnFilterDell);
+
+        // Highlight selected button
+        Button selectedBtn = null;
+        switch (currentFilter) {
+            case "ALL":
+                selectedBtn = btnFilterAll;
+                break;
+            case "ACTIVE":
+                selectedBtn = btnFilterActive;
+                break;
+            case "INACTIVE":
+                selectedBtn = btnFilterInactive;
+                break;
+            case "DELL":
+                selectedBtn = btnFilterDell;
+                break;
         }
-        return super.onOptionsItemSelected(item);
+
+        if (selectedBtn != null) {
+            selectedBtn.setBackgroundColor(getResources().getColor(android.R.color.white, null));
+            selectedBtn.setTextColor(getResources().getColor(R.color.teal_700, null));
+        }
     }
 
-    private void performSearch(String query) {
-        List<Computer> computers;
-        if (query.isEmpty()) {
-            computers = dbHelper.getAllComputers();
+    private void resetButtonStyle(Button btn) {
+        btn.setBackgroundColor(getResources().getColor(android.R.color.transparent, null));
+        btn.setTextColor(0xFFFFA726); // Orange color
+    }
+
+    private void setupColumnHeaders() {
+        headerName.setOnClickListener(v -> sortByColumn("name"));
+        headerBrand.setOnClickListener(v -> sortByColumn("brand"));
+        headerStatus.setOnClickListener(v -> sortByColumn("status"));
+    }
+
+    private void sortByColumn(String column) {
+        if (currentSortColumn.equals(column)) {
+            sortAscending = !sortAscending;
         } else {
-            computers = dbHelper.searchComputers(query);
+            currentSortColumn = column;
+            sortAscending = true;
         }
-        updateList(computers);
+        updateColumnHeaders();
+        filterAndSortList();
+    }
+
+    private void updateColumnHeaders() {
+        String arrow = sortAscending ? "↓" : "↑";
+        headerName.setText(currentSortColumn.equals("name") ? "Name " + arrow : "Name ↕");
+        headerBrand.setText(currentSortColumn.equals("brand") ? "Brand " + arrow : "Brand ↕");
+        headerStatus.setText(currentSortColumn.equals("status") ? "Status " + arrow : "Status ↕");
+    }
+
+    private void filterAndSortList() {
+        if (allComputers == null)
+            return;
+
+        List<Computer> filtered = new ArrayList<>();
+
+        for (Computer computer : allComputers) {
+            boolean matches = false;
+            switch (currentFilter) {
+                case "ALL":
+                    matches = true;
+                    break;
+                case "ACTIVE":
+                    matches = "Active".equalsIgnoreCase(computer.getStatus());
+                    break;
+                case "INACTIVE":
+                    matches = "Inactive".equalsIgnoreCase(computer.getStatus());
+                    break;
+                case "DELL":
+                    matches = computer.getBrandName() != null && computer.getBrandName().toLowerCase().contains("dell");
+                    break;
+            }
+            if (matches)
+                filtered.add(computer);
+        }
+
+        // Sort
+        Collections.sort(filtered, getComparator());
+
+        updateList(filtered);
+    }
+
+    private Comparator<Computer> getComparator() {
+        Comparator<Computer> comparator;
+
+        switch (currentSortColumn) {
+            case "brand":
+                comparator = (c1, c2) -> {
+                    String b1 = c1.getBrandName() != null ? c1.getBrandName() : "";
+                    String b2 = c2.getBrandName() != null ? c2.getBrandName() : "";
+                    return b1.compareToIgnoreCase(b2);
+                };
+                break;
+            case "status":
+                comparator = (c1, c2) -> {
+                    String s1 = c1.getStatus() != null ? c1.getStatus() : "";
+                    String s2 = c2.getStatus() != null ? c2.getStatus() : "";
+                    return s1.compareToIgnoreCase(s2);
+                };
+                break;
+            default: // name
+                comparator = (c1, c2) -> c1.getModel().compareToIgnoreCase(c2.getModel());
+        }
+
+        if (!sortAscending) {
+            comparator = Collections.reverseOrder(comparator);
+        }
+
+        return comparator;
     }
 
     private void updateList(List<Computer> computers) {
@@ -120,8 +273,8 @@ public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnCo
     }
 
     private void loadComputers() {
-        List<Computer> computers = dbHelper.getAllComputers();
-        updateList(computers);
+        allComputers = dbHelper.getAllComputers();
+        filterAndSortList();
     }
 
     @Override
@@ -133,9 +286,9 @@ public class Activity2 extends AppCompatActivity implements ComputerAdapter.OnCo
     }
 
     private void setupNavigation() {
-        android.widget.ImageButton btnBack = findViewById(R.id.btn_nav_back);
-        android.widget.ImageButton btnHome = findViewById(R.id.btn_nav_home);
-        android.widget.ImageButton btnExit = findViewById(R.id.btn_nav_exit);
+        ImageButton btnBack = findViewById(R.id.btn_nav_back);
+        ImageButton btnHome = findViewById(R.id.btn_nav_home);
+        ImageButton btnExit = findViewById(R.id.btn_nav_exit);
 
         btnBack.setOnClickListener(v -> finish());
 

@@ -22,6 +22,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import com.example.assignment1.R;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +36,6 @@ public class NetworkFormFragment extends Fragment {
     private EditText etName, etSerial, etLocation;
     private Spinner spinnerBrand, spinnerStatus;
     private Button btnSubmit;
-    private TextView tvTitle;
     private List<Brand> brandList;
     private ArrayAdapter<Brand> brandAdapter;
 
@@ -47,19 +48,20 @@ public class NetworkFormFragment extends Fragment {
             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_network_form, container, false);
 
-        tvTitle = view.findViewById(R.id.tv_form_title); // Assuming ID exists or defaults to first TextView
-        if (tvTitle == null && view instanceof ViewGroup) {
-            // Find first TextView if ID is missing (layout hack, or we rely on standard
-            // find)
-            // The layout has a TextView "New Machine", let's give it an ID or find it
-        }
-
+        // Initialize Views
         etName = view.findViewById(R.id.et_machine_name);
         etSerial = view.findViewById(R.id.et_serial_number);
         etLocation = view.findViewById(R.id.et_location);
         spinnerStatus = view.findViewById(R.id.spinner_status);
         spinnerBrand = view.findViewById(R.id.spinner_network_brand);
         btnSubmit = view.findViewById(R.id.btn_submit_machine);
+
+        // Optional: Set title if needed
+        TextView tvTitle = view.findViewById(R.id.tv_form_title);
+        if (tvTitle != null) {
+            // Title is set in XML ("New Machine"), but we could change it dynamically here
+            // if needed
+        }
 
         // Init Brand Spinner
         brandList = new ArrayList<>();
@@ -72,6 +74,7 @@ public class NetworkFormFragment extends Fragment {
                 android.R.layout.simple_spinner_dropdown_item, statuses);
         spinnerStatus.setAdapter(statusAdapter);
 
+        // Fetch brands from server
         fetchBrands();
 
         btnSubmit.setOnClickListener(v -> submitMachine());
@@ -101,6 +104,14 @@ public class NetworkFormFragment extends Fragment {
         }
 
         btnSubmit.setText("Update Machine");
+
+        // Update Title if possible
+        if (getView() != null) {
+            TextView tvTitle = getView().findViewById(R.id.tv_form_title);
+            if (tvTitle != null) {
+                tvTitle.setText("Edit Machine");
+            }
+        }
     }
 
     public void resetForm() {
@@ -111,6 +122,14 @@ public class NetworkFormFragment extends Fragment {
         spinnerStatus.setSelection(0);
         spinnerBrand.setSelection(0);
         btnSubmit.setText("Add Machine");
+
+        // Reset Title
+        if (getView() != null) {
+            TextView tvTitle = getView().findViewById(R.id.tv_form_title);
+            if (tvTitle != null) {
+                tvTitle.setText("New Machine");
+            }
+        }
     }
 
     private void fetchBrands() {
@@ -118,7 +137,8 @@ public class NetworkFormFragment extends Fragment {
             return;
 
         NetworkActivity activity = (NetworkActivity) getActivity();
-        String url = "http://10.45.204.208:3000/api/brands";
+        // Uses IP for wireless tethering
+        String url = "http://172.31.89.202:3000/api/brands";
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.GET,
@@ -139,6 +159,7 @@ public class NetworkFormFragment extends Fragment {
                             brandAdapter.notifyDataSetChanged();
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Toast.makeText(getContext(), "Error parsing brands", Toast.LENGTH_SHORT).show();
                         }
                     }
                 },
@@ -146,13 +167,16 @@ public class NetworkFormFragment extends Fragment {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         if (getContext() != null) {
-                            Toast.makeText(getContext(), "Failed to load brands. Using Offline.", Toast.LENGTH_SHORT)
+                            Toast.makeText(getContext(), "Using Offline Brands (Server Unreachable)",
+                                    Toast.LENGTH_SHORT)
                                     .show();
                         }
                         brandList.clear();
                         brandList.add(new Brand(1L, "Dell (Offline)", "Offline default"));
                         brandList.add(new Brand(2L, "HP (Offline)", "Offline default"));
                         brandList.add(new Brand(3L, "Lenovo (Offline)", "Offline default"));
+                        brandList.add(new Brand(4L, "Apple (Offline)", "Offline default"));
+                        brandList.add(new Brand(5L, "Asus (Offline)", "Offline default"));
                         brandAdapter.notifyDataSetChanged();
                     }
                 });
@@ -182,7 +206,16 @@ public class NetworkFormFragment extends Fragment {
 
         if (getActivity() == null)
             return;
+
+        // Safe casting with check
+        if (!(getActivity() instanceof NetworkActivity)) {
+            return;
+        }
+
         NetworkActivity activity = (NetworkActivity) getActivity();
+        if (activity == null)
+            return;
+
         RequestQueue queue = activity.getRequestQueue();
         String url = activity.getBaseUrl();
         int method = Request.Method.POST;
@@ -198,7 +231,8 @@ public class NetworkFormFragment extends Fragment {
             jsonBody.put("serial_number", serial);
             jsonBody.put("location", location);
             jsonBody.put("status", status);
-            if (selectedBrand != null) {
+            // Include brand_id if valid
+            if (selectedBrand != null && selectedBrand.getId() > 0) {
                 jsonBody.put("brand_id", selectedBrand.getId());
             }
         } catch (JSONException e) {
@@ -225,16 +259,19 @@ public class NetworkFormFragment extends Fragment {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        String message = "Error processing request";
+                        String message = "Attempt failed";
                         if (error.networkResponse != null && error.networkResponse.data != null) {
                             try {
                                 String errorData = new String(error.networkResponse.data, "UTF-8");
                                 JSONObject errorJson = new JSONObject(errorData);
-                                message = "Error: " + errorJson.optString("error", error.getMessage());
+                                message = errorJson.optString("error", error.getMessage());
                             } catch (Exception e) {
-                                message = "Error: " + error.networkResponse.statusCode;
+                                message = "Server Error: " + error.networkResponse.statusCode;
                             }
+                        } else {
+                            message = "Connection Error: Check Server";
                         }
+
                         if (getContext() != null) {
                             Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
                         }
